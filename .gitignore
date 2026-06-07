@@ -1,0 +1,12 @@
+# Runtime dirs -- created locally by scripts, never committed to skill repo
+state/
+audit/
+summaries/
+lessons/
+phases-rules/
+dev-helper.config.json
+
+# Dashboard build artifacts
+dashboard/node_modules/
+dashboard/out/
+dashboard/webview-ui/node_modules/

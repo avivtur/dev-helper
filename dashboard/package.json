@@ -1,0 +1,83 @@
+{
+  "name": "dev-helper-dashboard",
+  "displayName": "Dev Helper",
+  "description": "Developer workspace dashboard for ticket lifecycle management",
+  "version": "0.1.0",
+  "publisher": "local",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "devHelper.discoverComposerCommands",
+        "title": "Dev Helper: Discover Composer Commands"
+      },
+      {
+        "command": "devHelper.checkAccessibility",
+        "title": "Dev Helper: Check Accessibility Permission"
+      }
+    ],
+    "configuration": {
+      "title": "Dev Helper",
+      "properties": {
+        "devHelper.submitDelayMount": {
+          "type": "number",
+          "default": 250,
+          "description": "Milliseconds to wait after opening a new agent chat before focusing composer."
+        },
+        "devHelper.submitDelayFocus": {
+          "type": "number",
+          "default": 120,
+          "description": "Milliseconds to wait after focusing composer before pasting the prompt."
+        },
+        "devHelper.submitDelaySync": {
+          "type": "number",
+          "default": 150,
+          "description": "Milliseconds to wait after pasting before simulating Return to submit."
+        }
+      }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "dev-helper",
+          "title": "Dev Helper",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "dev-helper": [
+        {
+          "type": "webview",
+          "id": "devHelper.dashboard",
+          "name": ""
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "build": "npm run build:ext && npm run build:webview",
+    "build:ext": "node esbuild.mjs",
+    "build:webview": "cd webview-ui && npm run build",
+    "build:mcp": "node esbuild.mjs --mcp",
+    "watch": "node esbuild.mjs --watch",
+    "dev:webview": "cd webview-ui && npm run dev",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.3.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^4.4.3"
+  }
+}
