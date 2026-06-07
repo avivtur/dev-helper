@@ -4,6 +4,24 @@ Complete setup guide for the `dev-helper` Cursor skill.
 
 ---
 
+## 0. Install the Skill
+
+```bash
+cd your-project
+git clone https://github.com/avivtur/dev-helper .cursor/skills/dev-helper
+```
+
+Then add this line to your project's `.gitignore`:
+
+```
+.cursor/skills/dev-helper/
+```
+
+This prevents the skill from being accidentally committed to your project
+repo. The skill is a local tool, not part of your project's source code.
+
+---
+
 ## Prerequisites
 
 Ensure the following tools are installed and available on your `$PATH`:
@@ -74,11 +92,16 @@ curl -s -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
 
 The skill reads project settings from `dev-helper.config.json` in the skill root.
 
-Copy and customize:
+Copy one of the examples and customize:
 
 ```bash
 cd .cursor/skills/dev-helper
-cp dev-helper.config.example.json dev-helper.config.json
+
+# Minimal (3 required fields):
+cp examples/config.minimal.json dev-helper.config.json
+
+# Or full (all fields with Forklift reference values):
+cp examples/config.full.json dev-helper.config.json
 ```
 
 Edit values as needed:
