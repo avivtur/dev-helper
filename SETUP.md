@@ -164,7 +164,43 @@ If you already have a `hooks.json`, merge the entries into the existing `hooks` 
 
 ---
 
-## 4. Verify Setup
+## 4. Dashboard Extension (optional)
+
+The skill includes a Cursor sidebar extension that provides a visual
+dashboard: your PRs with merge readiness, PRs to review, Jira backlog
+with filters, and tickets on hold. It uses the same `dev-helper.config.json`
+and `~/.jira-creds` — no separate configuration needed.
+
+### Install and build
+
+```bash
+cd .cursor/skills/dev-helper/dashboard
+npm install
+npm run build
+```
+
+### Link into Cursor
+
+```bash
+ln -s "$(pwd)/.cursor/skills/dev-helper/dashboard" ~/.cursor/extensions/dev-helper-dashboard
+```
+
+Reload the Cursor window. The "Dev Helper" icon appears in the activity bar.
+
+### What it needs
+
+- `dev-helper.config.json` (step 2 above) — reads `jira.*` and `github.*`
+  fields for API calls and dashboard display
+- `~/.jira-creds` (step 1 above) — authenticates Jira API requests
+- `gh auth login` (prerequisites) — authenticates GitHub API requests
+
+If any of these are missing, the dashboard shows a **Setup Checklist** at
+the top telling you exactly which prerequisites are not configured yet and
+which section of this file to read.
+
+---
+
+## 5. Verify Setup
 
 Run these commands to confirm everything works:
 
