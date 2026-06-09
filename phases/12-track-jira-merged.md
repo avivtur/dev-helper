@@ -33,32 +33,38 @@ CURRENT_STATUS=$(curl -s -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
 TYPE=$(.cursor/skills/dev-helper/scripts/state-cli.sh field ${TICKET_KEY} '.type')
 ```
 
-Only transition if the ticket is not already at a terminal status (target
-status, Closed, or Verified). The guard below skips any ticket that has
-already reached its destination. Jira may not allow skipping intermediate
-states, so chain through them:
+Only transition if the ticket is not already at a terminal status (MODIFIED,
+Closed, Verified). By this phase the expected state is POST (set by Phase 10).
+Chain through any remaining intermediates idempotently:
 
-| Ticket Type | Target Status | Intermediate Chain |
-|-------------|--------------|-------------------|
-| Bug | Modified | In Progress -> POST -> Modified |
-| Story / Task | Closed | In Progress -> POST -> Closed |
-| Epic | Skip | Closed only when all child stories are done (step 12.6) |
+| Ticket Type | Expected state at Phase 12 | Target | Chain |
+|-------------|---------------------------|--------|-------|
+| Bug | POST (Phase 10 set it) | MODIFIED | POST → MODIFIED |
+| Story / Task | POST (Phase 10 set it) | Closed | POST → Closed |
+| Epic | Skip | — | Closed only when all children done (step 12.6) |
 
 ```bash
-if [[ "$TYPE" == "Bug" && "$CURRENT_STATUS" != "Modified" && "$CURRENT_STATUS" != "Closed" && "$CURRENT_STATUS" != "Verified" ]]; then
-  .cursor/skills/dev-helper/scripts/jira-transition.sh ${TICKET_KEY} "In Progress" 2>/dev/null || true
+TERMINAL_STATUSES=("Modified" "MODIFIED" "Closed" "Verified" "Release Pending")
+
+is_terminal() {
+  local status="$1"
+  for s in "${TERMINAL_STATUSES[@]}"; do [[ "$status" == "$s" ]] && return 0; done
+  return 1
+}
+
+if [[ "$TYPE" == "Bug" ]] && ! is_terminal "$CURRENT_STATUS"; then
+  # Bug: ASSIGNED/POST → MODIFIED (Phase 5 left it at ASSIGNED; Phase 10 moved to POST)
   .cursor/skills/dev-helper/scripts/jira-transition.sh ${TICKET_KEY} "POST" 2>/dev/null || true
   .cursor/skills/dev-helper/scripts/jira-transition.sh ${TICKET_KEY} "Modified"
-elif [[ "$TYPE" != "Bug" && "$TYPE" != "Epic" && "$CURRENT_STATUS" != "Closed" && "$CURRENT_STATUS" != "Verified" ]]; then
-  .cursor/skills/dev-helper/scripts/jira-transition.sh ${TICKET_KEY} "In Progress" 2>/dev/null || true
+elif [[ "$TYPE" != "Bug" && "$TYPE" != "Epic" ]] && ! is_terminal "$CURRENT_STATUS"; then
+  # Story/Task: In Progress/POST → Closed
   .cursor/skills/dev-helper/scripts/jira-transition.sh ${TICKET_KEY} "POST" 2>/dev/null || true
   .cursor/skills/dev-helper/scripts/jira-transition.sh ${TICKET_KEY} "Closed"
 fi
 ```
 
-Each intermediate transition is attempted and silently ignored if the ticket
-is already past that state. Only the final target transition is required to
-succeed.
+Each intermediate is silently ignored if the ticket is already past it.
+Only the final target transition is required to succeed.
 
 ### 12.2 Calculate and set story points (skip for Epics)
 

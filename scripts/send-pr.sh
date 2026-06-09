@@ -100,11 +100,16 @@ echo "[3/8] PR created: $pr_url (#$pr_number)"
 echo "[4/8] State updated with PR info"
 
 # Step 5: Transition Jira
+# Bug lifecycle: ASSIGNED (Phase 5) -> POST (Phase 10 here) -> MODIFIED (Phase 12)
+# Story/Task lifecycle: In Progress (Phase 5) -> POST (Phase 10 here) -> Closed (Phase 12)
 ticket_type=$("$STATE_CLI" field "$TICKET" '.type')
 if [[ "$ticket_type" == "Epic" ]]; then
   echo "[5/8] Epic: skipping transition (managed separately)"
+elif [[ "$ticket_type" == "Bug" ]]; then
+  # Bug: ASSIGNED -> POST directly (no "In Progress" intermediate in Bugzilla workflow)
+  "$JIRA_TRANSITION" "$TICKET" "POST" 2>/dev/null && echo "[5/8] Jira -> POST" || echo "[5/8] Jira POST transition failed (may need manual)"
 else
-  # Ensure ticket is at In Progress before moving to POST
+  # Story/Task: ensure In Progress first, then POST
   "$JIRA_TRANSITION" "$TICKET" "In Progress" 2>/dev/null || true
   "$JIRA_TRANSITION" "$TICKET" "POST" 2>/dev/null && echo "[5/8] Jira -> POST" || echo "[5/8] Jira transition failed (may need manual)"
 fi
