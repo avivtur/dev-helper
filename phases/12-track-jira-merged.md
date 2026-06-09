@@ -33,18 +33,18 @@ CURRENT_STATUS=$(curl -s -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
 TYPE=$(.cursor/skills/dev-helper/scripts/state-cli.sh field ${TICKET_KEY} '.type')
 ```
 
-Only transition if the ticket is not already at a terminal status (MODIFIED,
-Closed, Verified). By this phase the expected state is POST (set by Phase 10).
-Chain through any remaining intermediates idempotently:
+Only transition if the ticket is not already at a terminal status.
+Expected state at Phase 12 depends on ticket type (set by Phase 10):
 
-| Ticket Type | Expected state at Phase 12 | Target | Chain |
-|-------------|---------------------------|--------|-------|
-| Bug | POST (Phase 10 set it) | MODIFIED | POST → MODIFIED |
-| Story / Task | POST (Phase 10 set it) | Closed | POST → Closed |
-| Epic | Skip | — | Closed only when all children done (step 12.6) |
+| Ticket Type | Expected state at Phase 12 | Target | Transition |
+|-------------|---------------------------|--------|------------|
+| Bug | `Post` (Phase 10 set it) | `Modified` | `Post` → `Modified` |
+| Story | `In Progress` (Phase 10 set it) | `Done` | `In Progress` → `Done` |
+| Epic | skip | — | `Done` only when all children `Done` (step 12.6) |
+| Feature Request | skip | — | no auto-transition |
 
 ```bash
-TERMINAL_STATUSES=("Modified" "MODIFIED" "Closed" "Verified" "Release Pending")
+TERMINAL_STATUSES=("Modified" "MODIFIED" "Done" "Closed" "Verified" "Release Pending")
 
 is_terminal() {
   local status="$1"
@@ -53,11 +53,16 @@ is_terminal() {
 }
 
 if [[ "$TYPE" == "Bug" ]] && ! is_terminal "$CURRENT_STATUS"; then
-  # Bug: ASSIGNED/POST → MODIFIED (Phase 5 left it at ASSIGNED; Phase 10 moved to POST)
-  .cursor/skills/dev-helper/scripts/jira-transition.sh ${TICKET_KEY} "POST" 2>/dev/null || true
+  # Bug: Post (Phase 10) -> Modified
+  .cursor/skills/dev-helper/scripts/jira-transition.sh ${TICKET_KEY} "Post" 2>/dev/null || true
   .cursor/skills/dev-helper/scripts/jira-transition.sh ${TICKET_KEY} "Modified"
-elif [[ "$TYPE" != "Bug" && "$TYPE" != "Epic" ]] && ! is_terminal "$CURRENT_STATUS"; then
-  # Story/Task: In Progress/POST → Closed
+elif [[ "$TYPE" == "Story" ]] && ! is_terminal "$CURRENT_STATUS"; then
+  # Story: In Progress (Phase 10) -> Done
+  .cursor/skills/dev-helper/scripts/jira-transition.sh ${TICKET_KEY} "Done"
+elif [[ "$TYPE" != "Bug" && "$TYPE" != "Epic" && "$TYPE" != "Story" \
+      && "$TYPE" != "Feature Request" && "$TYPE" != "Feature" ]] \
+      && ! is_terminal "$CURRENT_STATUS"; then
+  # Other types (Task, etc.): legacy path POST -> Closed
   .cursor/skills/dev-helper/scripts/jira-transition.sh ${TICKET_KEY} "POST" 2>/dev/null || true
   .cursor/skills/dev-helper/scripts/jira-transition.sh ${TICKET_KEY} "Closed"
 fi
@@ -112,28 +117,35 @@ Key fields:
 ### 12.6 Check parent epic (stories only)
 
 If this was a Story under an Epic, check if all child stories of the Epic
-are now done. If so, close the Epic.
+are now `Done`. If so, transition the Epic to `Done`.
+
+Uses JQL to query all children. If the query fails (permissions, API version),
+log the error and continue — do not block the phase.
 
 ```bash
 source .cursor/skills/dev-helper/scripts/_config.sh
 source ~/.jira-creds
 
-PARENT_EPIC=$(curl -s -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
-  "${JIRA_BASE_URL}/rest/api/2/issue/${TICKET_KEY}?fields=parent" \
-  | jq -r '.fields.parent.key // empty')
+if [[ "$TYPE" == "Story" ]]; then
+  PARENT_EPIC=$(curl -s -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
+    "${JIRA_BASE_URL}/rest/api/2/issue/${TICKET_KEY}?fields=parent" \
+    | jq -r '.fields.parent.key // empty')
 
-if [[ -n "$PARENT_EPIC" ]]; then
-  OPEN_CHILDREN=$(curl -s -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
-    "${JIRA_BASE_URL}/rest/api/2/search" \
-    -G --data-urlencode "jql=parent = ${PARENT_EPIC} AND status not in (Closed, Verified, \"Release Pending\")" \
-    --data-urlencode "maxResults=0" \
-    | jq '.total')
+  if [[ -n "$PARENT_EPIC" ]]; then
+    OPEN_CHILDREN=$(curl -s -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
+      "${JIRA_BASE_URL}/rest/api/2/search" \
+      -G --data-urlencode "jql=parent = ${PARENT_EPIC} AND status not in (Done, Closed, Verified, \"Release Pending\")" \
+      --data-urlencode "maxResults=0" \
+      2>/dev/null | jq '.total // -1')
 
-  if [[ "$OPEN_CHILDREN" -eq 0 ]]; then
-    .cursor/skills/dev-helper/scripts/jira-transition.sh ${PARENT_EPIC} "Closed" 2>/dev/null || true
-    echo "Epic ${PARENT_EPIC}: all children closed -> Epic closed"
-  else
-    echo "Epic ${PARENT_EPIC}: ${OPEN_CHILDREN} children still open -> skipping"
+    if [[ "$OPEN_CHILDREN" == "-1" ]]; then
+      echo "Epic ${PARENT_EPIC}: could not query children (permissions?) — skipping Epic Done check"
+    elif [[ "$OPEN_CHILDREN" -eq 0 ]]; then
+      .cursor/skills/dev-helper/scripts/jira-transition.sh ${PARENT_EPIC} "Done" 2>/dev/null || true
+      echo "Epic ${PARENT_EPIC}: all children Done -> Epic Done"
+    else
+      echo "Epic ${PARENT_EPIC}: ${OPEN_CHILDREN} children still open -> skipping"
+    fi
   fi
 fi
 ```
@@ -216,6 +228,6 @@ Before advancing to `done`, `state-cli.sh phase` validates:
 
 - [ ] Previous phase was `track-jira-merged`
 - [ ] `.learn.status` is `learned` or `reviewed-skipped`
-- [ ] Jira status transitioned (Modified for bugs, Closed for stories/tasks)
+- [ ] Jira status transitioned: `Modified` for Bugs; `Done` for Stories; skipped for Epics and Feature Requests
 - [ ] Story points set (non-Epic tickets)
 - [ ] QA contact set

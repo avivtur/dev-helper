@@ -7,9 +7,8 @@
 **Gate:** Auto-recap (present what was set, continue)
 
 Sets Jira fields that require investigation context: story points, sprint, fix
-version. Transitions Stories/Tasks to In Progress; Bug tickets stay at ASSIGNED
-since their status progression is tied to PR lifecycle (POST at PR creation,
-MODIFIED at merge).
+version. No status transitions happen in this phase — each ticket type manages
+its own status lifecycle driven by PR events (Phase 10 and Phase 12).
 
 ---
 
@@ -21,29 +20,41 @@ MODIFIED at merge).
 
 ## Steps
 
-### 5.1 Transition to In Progress (Stories and Tasks only)
+### 5.1 Status check (no transitions)
 
-Transition behavior depends on ticket type:
+No Jira status transitions happen in Phase 5. Each ticket type has its own
+PR-lifecycle-driven path:
 
-**Bug tickets — skip status change:**
-Bugs follow the Bugzilla-style lifecycle: ASSIGNED → POST (PR created) →
-MODIFIED (PR merged). At this phase the bug is correctly at ASSIGNED, which
-already communicates "being worked on". Do not change the status here.
-
-**Story/Task tickets — transition to In Progress:**
+| Type | Status at Phase 5 | Next transition | Trigger |
+|------|-------------------|-----------------|---------|
+| Bug | `Assigned` (set in Phase 1) | `Post` | Phase 10: PR posted |
+| Story | `New` | `In Progress` | Phase 10: PR posted |
+| Epic | `New` | `In Progress` | Phase 10: first child Story goes In Progress |
+| Feature Request | `New` | (none — manual) | n/a |
 
 ```bash
 TYPE=$(.cursor/skills/dev-helper/scripts/state-cli.sh field ${TICKET_KEY} '.type')
 
-if [[ "$TYPE" != "Bug" && "$TYPE" != "Epic" ]]; then
-  .cursor/skills/dev-helper/scripts/jira-transition.sh ${TICKET_KEY} "In Progress"
-  echo "Transitioned ${TICKET_KEY} to In Progress"
-else
-  echo "Bug/Epic: skipping In Progress transition (managed by PR lifecycle)"
-fi
+case "$TYPE" in
+  Bug)
+    echo "Bug ${TICKET_KEY}: stays at Assigned (Phase 1 set it) — next transition at Phase 10 (Post)"
+    ;;
+  Story)
+    echo "Story ${TICKET_KEY}: stays at New — In Progress triggered at Phase 10 when PR is posted"
+    ;;
+  Epic)
+    echo "Epic ${TICKET_KEY}: stays at New — In Progress triggered at Phase 10 when first child Story goes In Progress"
+    ;;
+  "Feature Request"|Feature)
+    echo "Feature Request ${TICKET_KEY}: stays at New — no auto-transitions"
+    ;;
+  *)
+    echo "${TYPE} ${TICKET_KEY}: no transition in this phase"
+    ;;
+esac
 ```
 
-**WARNING:** Do NOT use POST here. POST is reserved for Phase 10 (Send PR).
+**WARNING:** Do NOT transition to Post or In Progress here. Those happen in Phase 10 (Send PR).
 
 ### 5.2 Calculate and set story points
 
@@ -80,10 +91,12 @@ FIX_VERSION=$(grep '^RVERSION=' build/release.conf | cut -d= -f2)
 .cursor/skills/dev-helper/scripts/jira-track.sh set-fix-version ${TICKET_KEY} "${FIX_VERSION}"
 ```
 
-### 5.5 Transition parent Epic (stories only)
+### 5.5 Note parent Epic (stories only — informational)
 
-If the ticket is a Story and has a parent Epic, check if the Epic is In Progress.
-If not, transition it:
+If the ticket is a Story, look up its parent Epic and note it in state for
+later use by Phase 10. **Do not transition the Epic here.** The Epic's
+`In Progress` transition happens at Phase 10 when the Story's PR is posted
+(that event is what drives Epic → In Progress).
 
 ```bash
 source .cursor/skills/dev-helper/scripts/_config.sh
@@ -98,13 +111,9 @@ if [[ "$TYPE" == "Story" ]]; then
     EPIC_STATUS=$(curl -s -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
       "${JIRA_BASE_URL}/rest/api/2/issue/${PARENT_KEY}?fields=status" \
       | jq -r '.fields.status.name')
-
-    if [[ "$EPIC_STATUS" != "In Progress" && "$EPIC_STATUS" != "POST" ]]; then
-      .cursor/skills/dev-helper/scripts/jira-transition.sh "${PARENT_KEY}" "In Progress" 2>/dev/null || true
-      echo "Transitioned parent Epic ${PARENT_KEY} to In Progress"
-    else
-      echo "Parent Epic ${PARENT_KEY} already at ${EPIC_STATUS} — skipping"
-    fi
+    echo "Parent Epic: ${PARENT_KEY} (currently ${EPIC_STATUS}) — will transition to In Progress at Phase 10"
+    .cursor/skills/dev-helper/scripts/state-cli.sh set ${TICKET_KEY} \
+      --arg pk "$PARENT_KEY" '.parentEpic = $pk' 2>/dev/null || true
   fi
 fi
 ```
@@ -116,7 +125,7 @@ Present a summary of what was set:
 ```text
 ## Jira Tracking: ${TICKET_KEY}
 
-**Status:** ASSIGNED (Bug) / In Progress (Story/Task)
+**Status:** Assigned (Bug — unchanged) / New (Story — unchanged) / New (Epic — unchanged)
 **Story Points:** <points>
 **Sprint:** <sprint name>
 **Fix Version:** <version>
@@ -146,8 +155,10 @@ No hard validation for this phase -- the Jira fields are set via
 - [ ] Story points set (`jira-track.sh set-story-points`)
 - [ ] Sprint assigned (`sprint-lookup.sh`)
 - [ ] Fix version set (`jira-track.sh set-fix-version`)
-- [ ] Jira status: Bug stays at ASSIGNED; Story/Task transitioned to In Progress
-- [ ] Parent Epic transitioned to In Progress if this is a Story (step 5.5)
+- [ ] Jira status confirmed: Bug stays at `Assigned`; Story/Epic/Feature Request stay at `New` — no transitions this phase
+- [ ] Parent Epic noted in state (if Story, step 5.5)
 
-**IMPORTANT:** Do NOT transition to POST here. POST happens in Phase 10 (Send PR).
-Bugs stay at ASSIGNED until the PR is created.
+**IMPORTANT:** No status transitions happen in this phase. All transitions are PR-lifecycle-driven:
+- Bug: `Assigned` → `Post` at Phase 10 (PR posted)
+- Story: `New` → `In Progress` at Phase 10 (PR posted); `In Progress` → `Done` at Phase 12 (PR merged)
+- Epic: `New` → `In Progress` at Phase 10 (first child Story posts PR); `In Progress` → `Done` at Phase 12 (all children Done)

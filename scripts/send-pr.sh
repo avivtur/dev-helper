@@ -16,7 +16,7 @@ Atomic PR creation script. Handles all Phase 10 steps in one command:
   2. Push to origin
   3. Create PR with enforced title format
   4. Update state file
-  5. Transition Jira (POST for bugs/tasks, In Progress for stories)
+  5. Transition Jira (Bug->Post, Story->In Progress + parent Epic check, Epic/Feature Request->skip)
   6. Set Jira PR link + Ready flag
   7. Advance to monitor-pr phase
   8. Mark waiting as pr-review-pending
@@ -99,17 +99,39 @@ echo "[3/8] PR created: $pr_url (#$pr_number)"
   ".prUrl = \"${pr_url}\" | .prNumber = ${pr_number} | .pr.createdAt = (now | todate)"
 echo "[4/8] State updated with PR info"
 
-# Step 5: Transition Jira
-# Bug lifecycle: ASSIGNED (Phase 5) -> POST (Phase 10 here) -> MODIFIED (Phase 12)
-# Story/Task lifecycle: In Progress (Phase 5) -> POST (Phase 10 here) -> Closed (Phase 12)
+# Step 5: Transition Jira (type-aware)
+# Ticket type status model:
+#   Bug:            Assigned (Phase 1) -> Post (here) -> Modified (Phase 12)
+#   Story:          New -> In Progress (here) -> Done (Phase 12)
+#   Epic:           New -> In Progress (auto when child Story posts PR, handled here)
+#   Feature Request: no auto-transitions
 ticket_type=$("$STATE_CLI" field "$TICKET" '.type')
-if [[ "$ticket_type" == "Epic" ]]; then
-  echo "[5/8] Epic: skipping transition (managed separately)"
+if [[ "$ticket_type" == "Epic" || "$ticket_type" == "Feature Request" || "$ticket_type" == "Feature" ]]; then
+  echo "[5/8] ${ticket_type}: skipping Jira transition (managed separately)"
 elif [[ "$ticket_type" == "Bug" ]]; then
-  # Bug: ASSIGNED -> POST directly (no "In Progress" intermediate in Bugzilla workflow)
-  "$JIRA_TRANSITION" "$TICKET" "POST" 2>/dev/null && echo "[5/8] Jira -> POST" || echo "[5/8] Jira POST transition failed (may need manual)"
+  # Bug: Assigned -> Post (PR posted)
+  "$JIRA_TRANSITION" "$TICKET" "Post" 2>/dev/null && echo "[5/8] Jira -> Post" || echo "[5/8] Jira Post transition failed (may need manual)"
+elif [[ "$ticket_type" == "Story" ]]; then
+  # Story: New -> In Progress (posting PR is the trigger for In Progress)
+  "$JIRA_TRANSITION" "$TICKET" "In Progress" 2>/dev/null && echo "[5/8] Jira -> In Progress" || echo "[5/8] Jira In Progress transition failed (may need manual)"
+  # Also transition parent Epic from New -> In Progress if applicable
+  source ~/.jira-creds 2>/dev/null || true
+  PARENT_EPIC=$(curl -s -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
+    "${JIRA_BASE_URL}/rest/api/2/issue/${TICKET}?fields=parent" \
+    2>/dev/null | jq -r '.fields.parent.key // empty' 2>/dev/null || echo "")
+  if [[ -n "$PARENT_EPIC" ]]; then
+    EPIC_STATUS=$(curl -s -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
+      "${JIRA_BASE_URL}/rest/api/2/issue/${PARENT_EPIC}?fields=status" \
+      2>/dev/null | jq -r '.fields.status.name' 2>/dev/null || echo "")
+    if [[ "$EPIC_STATUS" == "New" ]]; then
+      "$JIRA_TRANSITION" "$PARENT_EPIC" "In Progress" 2>/dev/null || true
+      echo "  Parent Epic ${PARENT_EPIC}: New -> In Progress"
+    else
+      echo "  Parent Epic ${PARENT_EPIC}: already at ${EPIC_STATUS:-unknown} — skipping"
+    fi
+  fi
 else
-  # Story/Task: ensure In Progress first, then POST
+  # Other types (Task, etc.): legacy path In Progress -> POST
   "$JIRA_TRANSITION" "$TICKET" "In Progress" 2>/dev/null || true
   "$JIRA_TRANSITION" "$TICKET" "POST" 2>/dev/null && echo "[5/8] Jira -> POST" || echo "[5/8] Jira transition failed (may need manual)"
 fi

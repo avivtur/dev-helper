@@ -39,23 +39,59 @@ Constants, field IDs, and formulas used across all phases.
 
 These IDs are consistent across all ticket types (Bug, Story, Task, Epic, Vulnerability).
 
-### Jira Status Transitions
+### Ticket Type Status Model
 
-| From | To | Typical Use |
-|------|----|-------------|
-| New | Assigned | Phase 1 (Triage): picking up ticket |
-| Assigned | In Progress | Phase 5 (Jira Track): starting work |
-| In Progress | POST | Phase 10 (Send PR): PR opened (all types except Epic) |
-| POST | Modified | Phase 12 (Post-Merge): PR merged (bugs only) |
-| POST | Closed | Phase 12 (Post-Merge): PR merged (stories/tasks) |
+Each ticket type has its own status lifecycle. dev-helper drives transitions
+at specific phases; manual transitions are handled outside this skill.
 
-**All ticket types follow the same path:** New -> Assigned -> In Progress -> POST -> final status.
+#### Bug
+
+| Status | Meaning | Set by |
+|--------|---------|--------|
+| `New` | Not yet assigned | (initial) |
+| `Assigned` | Developer picked it up | Phase 1 (Triage) |
+| `Post` | PR posted, not yet merged | Phase 10 (Send PR) |
+| `Modified` | PR merged, fix in codebase (not yet in build) | Phase 12 (Post-Merge) |
+| `On_QA` | Fix available in a build; QA can test | Manual / CI automation |
+| `Verified` | QE contact confirmed the fix | QE team |
+
+#### Story (always a child of an Epic)
+
+| Status | Meaning | Set by |
+|--------|---------|--------|
+| `New` | Work not started | (initial) |
+| `In Progress` | PR has been posted, not yet merged | Phase 10 (Send PR) |
+| `Done` | PR merged | Phase 12 (Post-Merge) |
+
+#### Epic
+
+| Status | Meaning | Set by |
+|--------|---------|--------|
+| `New` | No child story has started | (initial) |
+| `Refinement` | (not used — skip) | n/a |
+| `In Progress` | At least one child Story is In Progress | Phase 10 (when first child Story posts PR) |
+| `Done` | All child Stories are Done | Phase 12 (when last child Story merges) |
+
+dev-helper does **not** transition Epics directly; transitions are triggered
+automatically as child Stories advance.
+
+#### Feature Request
+
+Feature Requests group Epics (children are Epics, not Stories). Status
+tracking is mostly manual — dev-helper **never** auto-transitions Feature
+Requests. When encountered, skip all status transitions and note they exist.
+
+### Jira Status Transitions (by phase)
+
+| Phase | Bug | Story | Epic | Feature Request |
+|-------|-----|-------|------|-----------------|
+| Phase 1 — Triage | `New` → `Assigned` | (no change) | (no change) | (no change) |
+| Phase 5 — Jira Track | (no change) | (no change) | (no change) | (no change) |
+| Phase 10 — Send PR | `Assigned` → `Post` | `New` → `In Progress` (+ parent Epic check) | (triggered by child) | (skip) |
+| Phase 12 — Post-Merge | `Post` → `Modified` | `In Progress` → `Done` (+ all-children Epic check) | (triggered by children) | (skip) |
+
 Scripts chain through intermediate transitions automatically since Jira does
 not allow skipping states (e.g., New directly to Closed will fail).
-
-**Epic transitions:** Epics are never transitioned by individual PR merges.
-An Epic is closed only when ALL its child stories reach Closed/Verified status
-(checked in Phase 12, step 12.6).
 
 Note: Transition IDs vary per project. Use `jira-transition.sh discover <TICKET_KEY>` to find available transitions.
 

@@ -152,7 +152,7 @@ EOF
 2. Pushes to origin
 3. Creates PR on GitHub
 4. Updates state file with PR URL/number
-5. Transitions Jira to POST (for Bugs/Tasks)
+5. Transitions Jira: Bug → `Post`; Story → `In Progress` (+ parent Epic New→In Progress check); Epic/Feature Request → skip
 6. Sets Jira PR link + Ready flag
 7. Advances phase to monitor-pr
 8. Marks ticket as waiting (pr-review-pending)
@@ -169,7 +169,7 @@ Verify the output shows all 8 steps completed:
 [2/8] Pushed to origin/...
 [3/8] PR created: ...
 [4/8] State updated with PR info
-[5/8] Jira -> POST
+[5/8] Jira -> Post (Bug) / In Progress (Story) / skipped (Epic/Feature Request)
 [6/8] Jira PR link + Ready flag set
 [7/8] Phase -> monitor-pr
 [8/8] Marked waiting: pr-review-pending
@@ -193,5 +193,5 @@ The `send-pr.sh` script handles validation atomically. After it runs:
 
 - [ ] `.prNumber` field set in state
 - [ ] `.prUrl` field set in state
-- [ ] Jira transitioned to POST
+- [ ] Jira transitioned: Bug → `Post`; Story → `In Progress` (+ parent Epic `New` → `In Progress` if applicable); Epic/Feature Request → skipped
 - [ ] PR link set in Jira

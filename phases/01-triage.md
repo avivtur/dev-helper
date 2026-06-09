@@ -16,15 +16,39 @@ being looked at.
 
 ### 1.0 Minimal claim
 
-Transition to Assigned and set component so the ticket is visibly owned:
+Set the component so the ticket is visibly owned. Status transition depends on ticket type:
+
+- **Bug**: transition to `Assigned` — this is how the developer picks up the bug. All subsequent status changes are PR-lifecycle driven.
+- **Story**: stay `New` — no status change at triage. `In Progress` happens at Phase 10 when the PR is posted.
+- **Epic**: stay `New` — no status change. `In Progress` is triggered automatically when the first child Story goes `In Progress` (Phase 10).
+- **Feature Request**: stay `New` — dev-helper does not auto-transition Feature Requests.
+
+Since the ticket type is not known until step 1.1 fetches the ticket, set the component first, then apply the conditional transition after 1.1:
+
+**Part A — run immediately (component only):**
 
 ```bash
 source .cursor/skills/dev-helper/scripts/_config.sh
-.cursor/skills/dev-helper/scripts/jira-transition.sh ${TICKET_KEY} "Assigned"
 .cursor/skills/dev-helper/scripts/jira-track.sh set-component ${TICKET_KEY} "${JIRA_COMPONENT_ID}"
 ```
 
-If already Assigned or In Progress, skip the transition.
+**Part B — run after step 1.1 reveals the type (Bug only):**
+
+```bash
+source ~/.jira-creds
+
+ISSUE_INFO=$(curl -s -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
+  "${JIRA_BASE_URL}/rest/api/2/issue/${TICKET_KEY}?fields=status,issuetype")
+CURRENT_TYPE=$(echo "$ISSUE_INFO" | jq -r '.fields.issuetype.name')
+CURRENT_STATUS=$(echo "$ISSUE_INFO" | jq -r '.fields.status.name')
+
+if [[ "$CURRENT_TYPE" == "Bug" && "$CURRENT_STATUS" == "New" ]]; then
+  .cursor/skills/dev-helper/scripts/jira-transition.sh ${TICKET_KEY} "Assigned"
+  echo "Bug ${TICKET_KEY}: New -> Assigned"
+else
+  echo "${CURRENT_TYPE} ${TICKET_KEY}: stays at ${CURRENT_STATUS} (no triage transition)"
+fi
+```
 
 ### 1.1 Fetch ticket details
 
