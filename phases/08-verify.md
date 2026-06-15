@@ -1,7 +1,5 @@
 # Phase 8: Verify (Unit Tests)
 
-> **Project rules:** If `.cursor/skills/dev-helper/phases-rules/08-verify.md`
-> exists, read it first — it contains project-specific instructions for this phase.
 
 
 **Gate:** Auto-retry 3x on test failure, interrupt only if stuck
@@ -16,6 +14,14 @@ Writes and runs unit tests for the implementation. E2E tests are a separate phas
 - On the correct feature branch
 
 ## Steps
+
+### 0. Load project rules
+
+**Before doing anything else in this phase**, check if the file
+`.cursor/skills/dev-helper/phases-rules/08-verify.md` exists. If it does,
+read it now. It contains project-specific agent personas, coding standards,
+and conventions that MUST be applied during this phase. Do not skip this step.
+
 
 ### 8.1 Identify what needs tests
 

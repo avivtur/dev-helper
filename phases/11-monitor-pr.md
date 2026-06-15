@@ -1,7 +1,5 @@
 # Phase 11: Monitor PR
 
-> **Project rules:** If `.cursor/skills/dev-helper/phases-rules/11-monitor-pr.md`
-> exists, read it first — it contains project-specific instructions for this phase.
 
 
 **Gate:** Auto-fix CI/review issues; learn before merge; advance on merge
@@ -52,6 +50,17 @@ or on session start via reconcile.
 - New Jira comments on `awaiting-info` tickets (auto-resumes)
 - Stale waiting states (flags for follow-up)
 - Untracked PRs (adds to monitoring)
+
+---
+
+## Steps
+
+### 0. Load project rules
+
+**Before doing anything else in this phase**, check if the file
+`.cursor/skills/dev-helper/phases-rules/11-monitor-pr.md` exists. If it does,
+read it now. It contains project-specific agent personas, coding standards,
+and conventions that MUST be applied during this phase. Do not skip this step.
 
 ---
 

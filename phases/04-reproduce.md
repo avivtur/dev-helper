@@ -1,7 +1,5 @@
 # Phase 4: Reproduce
 
-> **Project rules:** If `.cursor/skills/dev-helper/phases-rules/04-reproduce.md`
-> exists, read it first — it contains project-specific instructions for this phase.
 
 
 **Gate:** Auto-recap (present evidence, continue)
@@ -40,6 +38,14 @@ Key tools: `browser_navigate`, `browser_snapshot`, `browser_click`, `browser_fil
 `browser_run_code`, `browser_console_messages`.
 
 ## Steps
+
+### 0. Load project rules
+
+**Before doing anything else in this phase**, check if the file
+`.cursor/skills/dev-helper/phases-rules/04-reproduce.md` exists. If it does,
+read it now. It contains project-specific agent personas, coding standards,
+and conventions that MUST be applied during this phase. Do not skip this step.
+
 
 ### 4.1 Determine console URL
 

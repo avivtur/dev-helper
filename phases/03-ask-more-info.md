@@ -1,7 +1,5 @@
 # Phase 3: Ask More Info
 
-> **Project rules:** If `.cursor/skills/dev-helper/phases-rules/03-ask-more-info.md`
-> exists, read it first — it contains project-specific instructions for this phase.
 
 
 **Gate:** Enters waiting state (optional phase -- only entered when investigation needs external input)
@@ -17,6 +15,14 @@ Use when the investigation (Phase 2) identified gaps that can't be resolved by
 searching the codebase or backend repo alone.
 
 ## Steps
+
+### 0. Load project rules
+
+**Before doing anything else in this phase**, check if the file
+`.cursor/skills/dev-helper/phases-rules/03-ask-more-info.md` exists. If it does,
+read it now. It contains project-specific agent personas, coding standards,
+and conventions that MUST be applied during this phase. Do not skip this step.
+
 
 ### 3.1 Identify what's missing
 

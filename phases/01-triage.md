@@ -1,7 +1,5 @@
 # Phase 1: Triage
 
-> **Project rules:** If `.cursor/skills/dev-helper/phases-rules/01-triage.md`
-> exists, read it first — it contains project-specific instructions for this phase.
 
 
 **Gate:** Auto-recap for valid outcomes; gate destructive outcomes (wrong team, duplicate, invalid)
@@ -13,6 +11,24 @@ being looked at.
 ---
 
 ## Steps
+
+### 0. Load project rules
+
+**Before doing anything else in this phase**, check if the file
+`.cursor/skills/dev-helper/phases-rules/01-triage.md` exists. If it does,
+read it now. It contains project-specific agent personas, coding standards,
+and conventions that MUST be applied during this phase. Do not skip this step.
+
+
+### 0b. Use provided scripts for all external operations
+
+All Jira API calls MUST use the scripts in `scripts/`:
+- `jira-transition.sh` for status changes
+- `jira-track.sh` for field updates (component, sprint, points, etc.)
+- `_config.sh` for credentials and config (source it, don't parse creds manually)
+
+Do NOT use raw `curl` for Jira or raw `gh` commands for operations that have
+a dedicated script. The scripts handle auth, error recovery, and state updates.
 
 ### 1.0 Minimal claim
 
@@ -79,6 +95,17 @@ TYPE="<issuetype.name from response>"
   '.type = $type'
 ```
 
+### 1.2b Epic handling
+
+If the ticket type is **Epic**:
+- Epics are containers for child Stories — they do NOT get branches or PRs
+- After triage and investigation, suggest working on a specific child Story
+- Skip Phases 4 (Reproduce), 7-10 (Implement through Send PR) for the Epic
+- The Epic's Jira status follows its children: In Progress when any child
+  starts, Closed when all children are done (Phase 12 step 12.6 handles this)
+- If the user wants to plan the Epic's child Stories, proceed to Phase 6
+  (Design) to create a breakdown, then create child Stories on Jira
+
 ### 1.3 Evaluate description clarity
 
 Check if the description has enough detail:
@@ -140,9 +167,11 @@ Assess two independent dimensions and store in state:
 | `complex` | Solution shape unknown. Requirements may shift as we build. May need prototyping. | Agent cannot predict the solution even after investigation. Multiple experts would disagree on approach. |
 
 Examples:
-- **clear**: Fix typo in i18n key. Missing null check. PatternFly enum update. Add a new provider type (12-step checklist in providers.mdc). Add a field to storage map details (known pattern).
-- **complicated**: Plan status shows Ready but migration fails -- need to trace getPlanStatus. Validation doesn't catch duplicates -- need to find where checks live. Performance regression -- need to profile.
-- **complex**: New conversion/inspection UX for an unfamiliar CRD. Redesign wizard for a new migration type. Integrate with a system whose API is still evolving.
+- **clear**: Fix a typo (wrong i18n key). Missing null check. Enum update. Add a new entity type following an existing documented checklist. Add a field to a details page (known pattern).
+- **complicated**: Status logic bug -- need to trace evaluation order. Validation gap -- need to find where checks live (form vs submit vs API). Performance regression -- need to profile before knowing the fix.
+- **complex**: Build UX for an unfamiliar CRD or API. Redesign a multi-step flow where which steps apply is unclear. Integrate with a system whose API contract is still evolving.
+
+For project-specific examples, see `phases-rules/01-triage.md`.
 
 **Work size** -- estimated implementation scope (independent of certainty):
 

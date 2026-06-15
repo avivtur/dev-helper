@@ -1,7 +1,5 @@
 # Phase 2: Investigate
 
-> **Project rules:** If `.cursor/skills/dev-helper/phases-rules/02-investigate.md`
-> exists, read it first — it contains project-specific instructions for this phase.
 
 
 **Gate:** Auto-recap (present findings, continue unless user interrupts)
@@ -16,6 +14,14 @@ Deeply investigates the ticket to understand the issue and identify root cause.
 - State file exists with ticket metadata
 
 ## Steps
+
+### 0. Load project rules
+
+**Before doing anything else in this phase**, check if the file
+`.cursor/skills/dev-helper/phases-rules/02-investigate.md` exists. If it does,
+read it now. It contains project-specific agent personas, coding standards,
+and conventions that MUST be applied during this phase. Do not skip this step.
+
 
 ### 2.1 Read the Jira ticket
 

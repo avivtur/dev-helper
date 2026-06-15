@@ -1,7 +1,5 @@
 # Phase 9: E2E Test (Playwright)
 
-> **Project rules:** If `.cursor/skills/dev-helper/phases-rules/09-e2e-test.md`
-> exists, read it first — it contains project-specific instructions for this phase.
 
 
 **Gate:** Skip gracefully if no cluster available (upstream-only tests are always OK)
@@ -23,6 +21,14 @@ This phase is skipped when:
 - Phase 8 already advanced directly to Send PR
 
 ## Steps
+
+### 0. Load project rules
+
+**Before doing anything else in this phase**, check if the file
+`.cursor/skills/dev-helper/phases-rules/09-e2e-test.md` exists. If it does,
+read it now. It contains project-specific agent personas, coding standards,
+and conventions that MUST be applied during this phase. Do not skip this step.
+
 
 ### 9.1 Check existing E2E coverage
 

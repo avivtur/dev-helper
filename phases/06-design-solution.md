@@ -1,7 +1,5 @@
 # Phase 6: Design Solution
 
-> **Project rules:** If `.cursor/skills/dev-helper/phases-rules/06-design-solution.md`
-> exists, read it first — it contains project-specific instructions for this phase.
 
 
 **Gate:** GATED by default (configurable via `phases.gates` in config)
@@ -23,6 +21,14 @@ If no phases-rules file exists, use your own judgment on which perspectives
 (developer, UX, QE, architecture, domain expert) to apply.
 
 ## Steps
+
+### 0. Load project rules
+
+**Before doing anything else in this phase**, check if the file
+`.cursor/skills/dev-helper/phases-rules/06-design-solution.md` exists. If it does,
+read it now. It contains project-specific agent personas, coding standards,
+and conventions that MUST be applied during this phase. Do not skip this step.
+
 
 ### 6.1 Search for similar patterns
 

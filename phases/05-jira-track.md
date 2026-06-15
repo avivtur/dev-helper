@@ -1,7 +1,5 @@
 # Phase 5: Jira Track
 
-> **Project rules:** If `.cursor/skills/dev-helper/phases-rules/05-jira-track.md`
-> exists, read it first — it contains project-specific instructions for this phase.
 
 
 **Gate:** Auto-recap (present what was set, continue)
@@ -19,6 +17,14 @@ its own status lifecycle driven by PR events (Phase 10 and Phase 12).
 - Agent has full understanding of the work scope
 
 ## Steps
+
+### 0. Load project rules
+
+**Before doing anything else in this phase**, check if the file
+`.cursor/skills/dev-helper/phases-rules/05-jira-track.md` exists. If it does,
+read it now. It contains project-specific agent personas, coding standards,
+and conventions that MUST be applied during this phase. Do not skip this step.
+
 
 ### 5.1 Status check (no transitions)
 

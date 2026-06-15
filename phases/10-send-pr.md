@@ -1,7 +1,5 @@
 # Phase 10: Send PR & Track Jira
 
-> **Project rules:** If `.cursor/skills/dev-helper/phases-rules/10-send-pr.md`
-> exists, read it first — it contains project-specific instructions for this phase.
 
 
 **Gate:** Autonomous (send-pr.sh handles everything atomically)
@@ -61,6 +59,21 @@ git rebase upstream/main
 Resolve any conflicts if needed.
 
 ## Steps
+
+### 0. Load project rules
+
+**Before doing anything else in this phase**, check if the file
+`.cursor/skills/dev-helper/phases-rules/10-send-pr.md` exists. If it does,
+read it now. It contains project-specific agent personas, coding standards,
+and conventions that MUST be applied during this phase. Do not skip this step.
+
+
+### 0b. Use provided scripts
+
+All PR and Jira operations in this phase MUST use the provided scripts:
+- `send-pr.sh` for the atomic PR creation pipeline (steps 10.3-10.8)
+- `jira-transition.sh` and `jira-track.sh` for any Jira updates
+Do NOT use raw `gh pr create` or raw `curl` for Jira.
 
 ### 10.0 Pre-PR verification (bugs)
 

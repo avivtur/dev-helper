@@ -1,7 +1,5 @@
 # Phase 12: Post-Merge Jira Tracking
 
-> **Project rules:** If `.cursor/skills/dev-helper/phases-rules/12-track-jira-merged.md`
-> exists, read it first — it contains project-specific instructions for this phase.
 
 
 **Gate:** Autonomous (final phase before done)
@@ -16,6 +14,22 @@ Completes all Jira tracking after the PR is merged.
 - State file has `pr.mergedAt`
 
 ## Steps
+
+### 0. Load project rules
+
+**Before doing anything else in this phase**, check if the file
+`.cursor/skills/dev-helper/phases-rules/12-track-jira-merged.md` exists. If it does,
+read it now. It contains project-specific agent personas, coding standards,
+and conventions that MUST be applied during this phase. Do not skip this step.
+
+
+### 0b. Use provided scripts
+
+All Jira operations in this phase MUST use the provided scripts:
+- `jira-transition.sh` for status changes
+- `jira-track.sh` for field updates (story points, QA contact, sprint, etc.)
+- `_config.sh` for credentials (source it, don't parse creds manually)
+Do NOT use raw `curl` for Jira API calls.
 
 ### 12.1 Transition status (idempotent)
 
