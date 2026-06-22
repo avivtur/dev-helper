@@ -29,6 +29,13 @@ If no phases-rules file exists, use your own judgment on which perspectives
 read it now. It contains project-specific agent personas, coding standards,
 and conventions that MUST be applied during this phase. Do not skip this step.
 
+### 6.0 Switch to Plan mode
+
+Call `SwitchMode` with `target_mode_id: "plan"` and explanation:
+"Switching to plan mode for design phase -- all design work should be
+read-only until the plan is approved."
+
+If already in plan mode, skip this step.
 
 ### 6.1 Search for similar patterns
 
@@ -69,7 +76,7 @@ details page, tips panel, icons, lists, filters, mappings, plans, etc.
 
 ### 6.5 Create the plan
 
-Use Cursor's `CreatePlan` tool (or markdown in chat if unavailable). The design
+Call Cursor's `CreatePlan` tool with the design content. The `plan` parameter
 **must** follow this template -- do not deviate from the section structure:
 
 ```markdown
@@ -80,15 +87,13 @@ Use Cursor's `CreatePlan` tool (or markdown in chat if unavailable). The design
 
 ## Approach
 [What will change and why this approach was chosen over alternatives.
- Reference specific file paths and code snippets.]
+ Reference specific file paths and code snippets.
+ Include a mermaid diagram if the change involves new data flows,
+ component hierarchies, or multi-step processes.]
 
-## Files Affected
-[From blast radius analysis. Specific paths, not vague areas.
- For each file: what changes and why.]
-
-## Decision Tree
+## Alternatives Considered
 [Options considered. For each: what it is, pros, cons, chosen/rejected.
- If any branch is unresolved -- STOP and ask the user.]
+ If any option is unresolved -- STOP and ask the user.]
 
 ## Scope
 **In scope:** [explicit list]
@@ -101,14 +106,28 @@ Use Cursor's `CreatePlan` tool (or markdown in chat if unavailable). The design
 [What are we giving up? What could go wrong?]
 ```
 
-**HARD CONSTRAINT**: If the decision tree has unresolved branches (the agent
-is uncertain which path to take), the plan MUST stop and ask the user before
-proceeding. Do not assume the answer.
+Pass implementation tasks via the `todos` parameter of `CreatePlan`. Each todo
+should be a concrete step listing the target files and what changes. This
+replaces a separate "Files Affected" section -- the todos carry that
+information implicitly:
+
+```
+todos: [
+  { id: "1", content: "Add WAIT_FOR_GUEST_REBOOTS_NAME constant to utils/utils.ts" },
+  { id: "2", content: "Create PostMigrationAlert component in components/" },
+  { id: "3", content: "Wire PostMigrationAlert into MigrationProgressTable.tsx" },
+  { id: "4", content: "Add unit tests for getVMMigrationStatus in utils.test.ts" },
+]
+```
+
+**HARD CONSTRAINT**: If "Alternatives Considered" has unresolved options (the
+agent is uncertain which path to take), the plan MUST stop and ask the user
+before proceeding. Do not assume the answer.
 
 ### 6.6 Present for approval
 
-Present the design using the template above. If findings were identified
-during the design review, classify each one:
+`CreatePlan` presents the design to the user for approval. If findings were
+identified during the design review, classify each one:
 
 - **REQUIRED** -- must be resolved before implementation begins
 - **SUGGESTED** -- advisory, user decides
@@ -126,25 +145,31 @@ Do not interpret silence as approval. Wait for an explicit choice.
 
 If not gated, present the design as FYI (with any findings) and auto-advance.
 
-### 6.7 Save design artifact
+### 6.7 Save design artifact and advance phase
 
-Write the full design plan to the ticket's artifact folder:
+After the plan is approved, persist the design and advance:
 
-```text
-File: .cursor/skills/dev-helper/state/${TICKET_KEY}/design.md
-```
+1. **Save design.md** -- Write the same content passed to `CreatePlan` to:
 
-Content: the design following the template from step 6.5. Use the Write tool.
+   ```text
+   .cursor/skills/dev-helper/state/${TICKET_KEY}/design.md
+   ```
 
-### 6.8 Advance phase
+   Use the Write tool. The `design.md` is a persisted copy of the approved
+   plan -- do NOT write it before approval.
 
-```bash
-.cursor/skills/dev-helper/scripts/state-cli.sh set ${TICKET_KEY} \
-  --arg planFile ".cursor/skills/dev-helper/state/${TICKET_KEY}/design.md" \
-  '.design.planFile = $planFile | .design.approvedAt = (now | todate)'
+2. **Switch back to Agent mode** -- Call `SwitchMode` with
+   `target_mode_id: "agent"` before advancing to the implement phase.
 
-.cursor/skills/dev-helper/scripts/state-cli.sh phase ${TICKET_KEY} implement
-```
+3. **Update state and advance:**
+
+   ```bash
+   .cursor/skills/dev-helper/scripts/state-cli.sh set ${TICKET_KEY} \
+     --arg planFile ".cursor/skills/dev-helper/state/${TICKET_KEY}/design.md" \
+     '.design.planFile = $planFile | .design.approvedAt = (now | todate)'
+
+   .cursor/skills/dev-helper/scripts/state-cli.sh phase ${TICKET_KEY} implement
+   ```
 
 ## Completion Checklist
 
