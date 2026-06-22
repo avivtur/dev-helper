@@ -55,7 +55,7 @@ const PRIORITY_RANK: Record<string, number> = {
 };
 
 const DEFAULT_STATUS_ORDER: Record<string, number> = {
-  New: 0, Assigned: 1, POST: 2, Modified: 3, ON_QA: 4,
+  New: 0, ASSIGNED: 1, 'In Progress': 2, POST: 3, MODIFIED: 4, ON_QA: 5,
 };
 
 const SORTABLE_COLUMNS: { id: SortColumn; label: string; tooltip: string; center?: boolean }[] = [
@@ -172,7 +172,7 @@ const JiraBacklog: FC<JiraBacklogProps> = ({
     return Array.from(set).sort();
   }, [tickets]);
 
-  const NEW_ONLY_STATUSES = new Set(['New', 'Assigned']);
+  const NEW_ONLY_STATUSES = new Set(['New', 'ASSIGNED']);
 
   const filtered = useMemo(() => {
     return tickets.filter((t) => {
