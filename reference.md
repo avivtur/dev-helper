@@ -49,10 +49,10 @@ at specific phases; manual transitions are handled outside this skill.
 | Status | Meaning | Set by |
 |--------|---------|--------|
 | `New` | Not yet assigned | (initial) |
-| `Assigned` | Developer picked it up | Phase 1 (Triage) |
-| `Post` | PR posted, not yet merged | Phase 10 (Send PR) |
-| `Modified` | PR merged, fix in codebase (not yet in build) | Phase 12 (Post-Merge) |
-| `On_QA` | Fix available in a build; QA can test | Manual / CI automation |
+| `ASSIGNED` | Developer picked it up | Phase 1 (Triage) |
+| `POST` | PR posted, not yet merged | Phase 10 (Send PR) |
+| `MODIFIED` | PR merged, fix in codebase (not yet in build) | Phase 12 (Post-Merge) |
+| `ON_QA` | Fix available in a build; QA can test | Manual / CI automation |
 | `Verified` | QE contact confirmed the fix | QE team |
 
 #### Story (always a child of an Epic)
@@ -85,10 +85,10 @@ Requests. When encountered, skip all status transitions and note they exist.
 
 | Phase | Bug | Story | Epic | Feature Request |
 |-------|-----|-------|------|-----------------|
-| Phase 1 — Triage | `New` → `Assigned` | (no change) | (no change) | (no change) |
+| Phase 1 — Triage | `New` → `ASSIGNED` | (no change) | (no change) | (no change) |
 | Phase 5 — Jira Track | (no change) | (no change) | (no change) | (no change) |
-| Phase 10 — Send PR | `Assigned` → `Post` | `New` → `In Progress` (+ parent Epic check) | (triggered by child) | (skip) |
-| Phase 12 — Post-Merge | `Post` → `Modified` | `In Progress` → `Done` (+ all-children Epic check) | (triggered by children) | (skip) |
+| Phase 10 — Send PR | `ASSIGNED` → `POST` | `New` → `In Progress` (+ parent Epic check) | (triggered by child) | (skip) |
+| Phase 12 — Post-Merge | `POST` → `MODIFIED` | `In Progress` → `Done` (+ all-children Epic check) | (triggered by children) | (skip) |
 
 Scripts chain through intermediate transitions automatically since Jira does
 not allow skipping states (e.g., New directly to Closed will fail).
@@ -135,7 +135,7 @@ Never hardcode the sprint name -- it changes every 3 weeks.
 | 13 | L | Complex (new area / research / complex impl) | 4-7 days |
 | 21 | XL | Too big, should be broken into smaller tasks | >1 week |
 
-Calculation inputs: elapsed time (Assigned -> PR merged), investigation depth, work size.
+Calculation inputs: elapsed time (ASSIGNED -> PR merged), investigation depth, work size.
 
 ---
 

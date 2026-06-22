@@ -11,7 +11,7 @@ Usage: jira-transition.sh <TICKET_KEY> <TARGET_STATUS>
 Transitions a Jira ticket to the target status.
 Use 'discover' to list available transitions for a ticket.
 
-Common statuses: New, Assigned, In Progress, POST, Modified, Closed
+Common statuses: New, ASSIGNED, In Progress, POST, MODIFIED, ON_QA, Verified, Closed
 USAGE
   exit 1
 }

@@ -33,7 +33,7 @@ check_pr_merged() {
     if [[ "$ticket_type" == "Bug" ]]; then
       "$JIRA_TRANSITION" "$ticket" "In Progress" 2>/dev/null || true
       "$JIRA_TRANSITION" "$ticket" "POST" 2>/dev/null || true
-      "$JIRA_TRANSITION" "$ticket" "Modified" 2>/dev/null || true
+      "$JIRA_TRANSITION" "$ticket" "MODIFIED" 2>/dev/null || true
     elif [[ "$ticket_type" != "Epic" ]]; then
       "$JIRA_TRANSITION" "$ticket" "In Progress" 2>/dev/null || true
       "$JIRA_TRANSITION" "$ticket" "POST" 2>/dev/null || true

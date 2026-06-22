@@ -52,13 +52,13 @@ Expected state at Phase 12 depends on ticket type (set by Phase 10):
 
 | Ticket Type | Expected state at Phase 12 | Target | Transition |
 |-------------|---------------------------|--------|------------|
-| Bug | `Post` (Phase 10 set it) | `Modified` | `Post` → `Modified` |
+| Bug | `POST` (Phase 10 set it) | `MODIFIED` | `POST` → `MODIFIED` |
 | Story | `In Progress` (Phase 10 set it) | `Done` | `In Progress` → `Done` |
 | Epic | skip | — | `Done` only when all children `Done` (step 12.6) |
 | Feature Request | skip | — | no auto-transition |
 
 ```bash
-TERMINAL_STATUSES=("Modified" "MODIFIED" "Done" "Closed" "Verified" "Release Pending")
+TERMINAL_STATUSES=("MODIFIED" "Done" "Closed" "Verified" "Release Pending")
 
 is_terminal() {
   local status="$1"
@@ -67,9 +67,9 @@ is_terminal() {
 }
 
 if [[ "$TYPE" == "Bug" ]] && ! is_terminal "$CURRENT_STATUS"; then
-  # Bug: Post (Phase 10) -> Modified
-  .cursor/skills/dev-helper/scripts/jira-transition.sh ${TICKET_KEY} "Post" 2>/dev/null || true
-  .cursor/skills/dev-helper/scripts/jira-transition.sh ${TICKET_KEY} "Modified"
+  # Bug: POST (Phase 10) -> MODIFIED
+  .cursor/skills/dev-helper/scripts/jira-transition.sh ${TICKET_KEY} "POST" 2>/dev/null || true
+  .cursor/skills/dev-helper/scripts/jira-transition.sh ${TICKET_KEY} "MODIFIED"
 elif [[ "$TYPE" == "Story" ]] && ! is_terminal "$CURRENT_STATUS"; then
   # Story: In Progress (Phase 10) -> Done
   .cursor/skills/dev-helper/scripts/jira-transition.sh ${TICKET_KEY} "Done"
@@ -242,6 +242,6 @@ Before advancing to `done`, `state-cli.sh phase` validates:
 
 - [ ] Previous phase was `track-jira-merged`
 - [ ] `.learn.status` is `learned` or `reviewed-skipped`
-- [ ] Jira status transitioned: `Modified` for Bugs; `Done` for Stories; skipped for Epics and Feature Requests
+- [ ] Jira status transitioned: `MODIFIED` for Bugs; `Done` for Stories; skipped for Epics and Feature Requests
 - [ ] Story points set (non-Epic tickets)
 - [ ] QA contact set

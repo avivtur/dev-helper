@@ -33,7 +33,7 @@ PR-lifecycle-driven path:
 
 | Type | Status at Phase 5 | Next transition | Trigger |
 |------|-------------------|-----------------|---------|
-| Bug | `Assigned` (set in Phase 1) | `Post` | Phase 10: PR posted |
+| Bug | `ASSIGNED` (set in Phase 1) | `POST` | Phase 10: PR posted |
 | Story | `New` | `In Progress` | Phase 10: PR posted |
 | Epic | `New` | `In Progress` | Phase 10: first child Story goes In Progress |
 | Feature Request | `New` | (none — manual) | n/a |
@@ -43,7 +43,7 @@ TYPE=$(.cursor/skills/dev-helper/scripts/state-cli.sh field ${TICKET_KEY} '.type
 
 case "$TYPE" in
   Bug)
-    echo "Bug ${TICKET_KEY}: stays at Assigned (Phase 1 set it) — next transition at Phase 10 (Post)"
+    echo "Bug ${TICKET_KEY}: stays at ASSIGNED (Phase 1 set it) — next transition at Phase 10 (POST)"
     ;;
   Story)
     echo "Story ${TICKET_KEY}: stays at New — In Progress triggered at Phase 10 when PR is posted"
@@ -131,7 +131,7 @@ Present a summary of what was set:
 ```text
 ## Jira Tracking: ${TICKET_KEY}
 
-**Status:** Assigned (Bug — unchanged) / New (Story — unchanged) / New (Epic — unchanged)
+**Status:** ASSIGNED (Bug — unchanged) / New (Story — unchanged) / New (Epic — unchanged)
 **Story Points:** <points>
 **Sprint:** <sprint name>
 **Fix Version:** <version>
@@ -161,10 +161,10 @@ No hard validation for this phase -- the Jira fields are set via
 - [ ] Story points set (`jira-track.sh set-story-points`)
 - [ ] Sprint assigned (`sprint-lookup.sh`)
 - [ ] Fix version set (`jira-track.sh set-fix-version`)
-- [ ] Jira status confirmed: Bug stays at `Assigned`; Story/Epic/Feature Request stay at `New` — no transitions this phase
+- [ ] Jira status confirmed: Bug stays at `ASSIGNED`; Story/Epic/Feature Request stay at `New` — no transitions this phase
 - [ ] Parent Epic noted in state (if Story, step 5.5)
 
 **IMPORTANT:** No status transitions happen in this phase. All transitions are PR-lifecycle-driven:
-- Bug: `Assigned` → `Post` at Phase 10 (PR posted)
+- Bug: `ASSIGNED` → `POST` at Phase 10 (PR posted)
 - Story: `New` → `In Progress` at Phase 10 (PR posted); `In Progress` → `Done` at Phase 12 (PR merged)
 - Epic: `New` → `In Progress` at Phase 10 (first child Story posts PR); `In Progress` → `Done` at Phase 12 (all children Done)

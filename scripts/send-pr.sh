@@ -16,7 +16,7 @@ Atomic PR creation script. Handles all Phase 10 steps in one command:
   2. Push to origin
   3. Create PR with enforced title format
   4. Update state file
-  5. Transition Jira (Bug->Post, Story->In Progress + parent Epic check, Epic/Feature Request->skip)
+  5. Transition Jira (Bug->POST, Story->In Progress + parent Epic check, Epic/Feature Request->skip)
   6. Set Jira PR link + Ready flag
   7. Advance to monitor-pr phase
   8. Mark waiting as pr-review-pending
@@ -101,7 +101,7 @@ echo "[4/8] State updated with PR info"
 
 # Step 5: Transition Jira (type-aware)
 # Ticket type status model:
-#   Bug:            Assigned (Phase 1) -> Post (here) -> Modified (Phase 12)
+#   Bug:            ASSIGNED (Phase 1) -> POST (here) -> MODIFIED (Phase 12)
 #   Story:          New -> In Progress (here) -> Done (Phase 12)
 #   Epic:           New -> In Progress (auto when child Story posts PR, handled here)
 #   Feature Request: no auto-transitions
@@ -109,8 +109,8 @@ ticket_type=$("$STATE_CLI" field "$TICKET" '.type')
 if [[ "$ticket_type" == "Epic" || "$ticket_type" == "Feature Request" || "$ticket_type" == "Feature" ]]; then
   echo "[5/8] ${ticket_type}: skipping Jira transition (managed separately)"
 elif [[ "$ticket_type" == "Bug" ]]; then
-  # Bug: Assigned -> Post (PR posted)
-  "$JIRA_TRANSITION" "$TICKET" "Post" 2>/dev/null && echo "[5/8] Jira -> Post" || echo "[5/8] Jira Post transition failed (may need manual)"
+  # Bug: ASSIGNED -> POST (PR posted)
+  "$JIRA_TRANSITION" "$TICKET" "POST" 2>/dev/null && echo "[5/8] Jira -> POST" || echo "[5/8] Jira POST transition failed (may need manual)"
 elif [[ "$ticket_type" == "Story" ]]; then
   # Story: New -> In Progress (posting PR is the trigger for In Progress)
   "$JIRA_TRANSITION" "$TICKET" "In Progress" 2>/dev/null && echo "[5/8] Jira -> In Progress" || echo "[5/8] Jira In Progress transition failed (may need manual)"

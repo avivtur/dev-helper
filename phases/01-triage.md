@@ -34,7 +34,7 @@ a dedicated script. The scripts handle auth, error recovery, and state updates.
 
 Set the component so the ticket is visibly owned. Status transition depends on ticket type:
 
-- **Bug**: transition to `Assigned` — this is how the developer picks up the bug. All subsequent status changes are PR-lifecycle driven.
+- **Bug**: transition to `ASSIGNED` — this is how the developer picks up the bug. All subsequent status changes are PR-lifecycle driven.
 - **Story**: stay `New` — no status change at triage. `In Progress` happens at Phase 10 when the PR is posted.
 - **Epic**: stay `New` — no status change. `In Progress` is triggered automatically when the first child Story goes `In Progress` (Phase 10).
 - **Feature Request**: stay `New` — dev-helper does not auto-transition Feature Requests.
@@ -59,8 +59,8 @@ CURRENT_TYPE=$(echo "$ISSUE_INFO" | jq -r '.fields.issuetype.name')
 CURRENT_STATUS=$(echo "$ISSUE_INFO" | jq -r '.fields.status.name')
 
 if [[ "$CURRENT_TYPE" == "Bug" && "$CURRENT_STATUS" == "New" ]]; then
-  .cursor/skills/dev-helper/scripts/jira-transition.sh ${TICKET_KEY} "Assigned"
-  echo "Bug ${TICKET_KEY}: New -> Assigned"
+  .cursor/skills/dev-helper/scripts/jira-transition.sh ${TICKET_KEY} "ASSIGNED"
+  echo "Bug ${TICKET_KEY}: New -> ASSIGNED"
 else
   echo "${CURRENT_TYPE} ${TICKET_KEY}: stays at ${CURRENT_STATUS} (no triage transition)"
 fi
