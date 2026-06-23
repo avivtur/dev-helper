@@ -152,21 +152,7 @@ export class DashboardViewProvider implements vscode.WebviewViewProvider {
         label = 'all PRs';
         break;
       case 'review-pr':
-        prompt = [
-          `Review PR #${prNumber} using 4 perspectives:`,
-          '1. As Developer (.cursor/rules/agents/developer.mdc): code quality, architecture, patterns',
-          '2. As QE (.cursor/rules/agents/qe-agent.mdc): edge cases, test coverage, async issues',
-          '3. As UX (.cursor/rules/agents/ux-reviewer.mdc): accessibility, states, PatternFly consistency',
-          '4. As Architect (.cursor/rules/agents/architect.mdc): blast radius, component dependencies, cross-feature impact',
-          '',
-          'Gate at the review summary. Present findings in this format:',
-          `## Review Summary for PR #${prNumber}`,
-          '### Developer: [findings]',
-          '### QE: [findings]',
-          '### UX: [findings]',
-          '### Architect: [findings]',
-          '### Verdict: [APPROVE / REQUEST_CHANGES / COMMENT]',
-        ].join('\n');
+        prompt = `/personal-reviewer ${prNumber}`;
         label = `PR #${prNumber} review`;
         break;
     }
