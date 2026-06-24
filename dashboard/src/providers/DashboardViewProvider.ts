@@ -152,7 +152,7 @@ export class DashboardViewProvider implements vscode.WebviewViewProvider {
         label = 'all PRs';
         break;
       case 'review-pr':
-        prompt = `/personal-reviewer ${prNumber}`;
+        prompt = `Read and follow .cursor/skills/personal-reviewer/SKILL.md to review PR #${prNumber}`;
         label = `PR #${prNumber} review`;
         break;
     }
