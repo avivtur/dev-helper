@@ -1,3 +1,6 @@
+<!-- FALLBACK REFERENCE: Use phases/quick-ref.md for normal flow.
+     Read this file ONLY if a step fails or you need error recovery details. -->
+
 # Phase 11b: Learn
 
 
@@ -41,10 +44,28 @@ read it now. It contains project-specific agent personas, coding standards,
 and conventions that MUST be applied during this phase. Do not skip this step.
 
 
-### 11b.1 Review the work (mandatory)
+### 11b.0 Lightweight path (clear tickets) — orchestrator
 
-Gather all context from the ticket lifecycle. Every item below MUST be
-reviewed before making a learn/skip decision:
+Before a full learn subagent:
+
+1. Read `.complexity` from state.
+2. If `clear`, count PR comments:
+```bash
+gh api repos/${GH_REPO}/pulls/${PR_NUMBER}/comments --jq 'length'
+```
+3. **0 comments** → set `.learn.status = "reviewed-skipped"` and advance to
+   `track-jira-merged` (**no subagent**, no diff review).
+4. **Has comments** → dispatch learn in **comments-only** mode (review comment
+   bodies / mentioned files only; skip full PR diff and investigation/design
+   unless a comment requires them).
+
+Complicated/complex tickets always use the full review below.
+
+### 11b.1 Review the work (mandatory for full / comments-only as scoped)
+
+Gather context from the ticket lifecycle. For **full** learn, every item below
+MUST be reviewed before making a learn/skip decision. For **comments-only**,
+start with review comments and expand only as needed.
 
 ```bash
 STATE_CLI=".cursor/skills/dev-helper/scripts/state-cli.sh"

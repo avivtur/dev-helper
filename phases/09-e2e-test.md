@@ -1,105 +1,50 @@
-# Phase 9: E2E Test (Playwright)
+<!-- FALLBACK REFERENCE: Use phases/quick-ref.md for normal flow.
+     Read this file ONLY if a step fails or you need error recovery details. -->
+
+# Phase 9: E2E Test (AI Write / Human Run)
 
 
 
-**Gate:** Skip gracefully if no cluster available (upstream-only tests are always OK)
-
-Writes and runs Playwright E2E tests for user-visible UI changes.
-
----
+**Gate:** Skip if no cluster or no UI change. Human runs the suite.
 
 ## Prerequisites
 
-- Unit tests passing (Phase 8)
-- Change affects a user-visible UI flow (button, form, table, modal, page)
-- On the correct feature branch
-
-## When to Skip
-
-This phase is skipped when:
-- The change is purely logic/utility with no UI flow impact
-- Phase 8 already advanced directly to Send PR
+- Unit tests confirmed (Phase 8)
+- UI flow changed (otherwise skip to send-pr)
 
 ## Steps
 
 ### 0. Load project rules
 
-**Before doing anything else in this phase**, check if the file
-`.cursor/skills/dev-helper/phases-rules/09-e2e-test.md` exists. If it does,
-read it now. It contains project-specific agent personas, coding standards,
-and conventions that MUST be applied during this phase. Do not skip this step.
+If `phases-rules/09-e2e-test.md` exists, read it. Also see
+`phases-rules` / project playwright docs.
 
+### 9.1 Subagent writes or updates E2E
 
-### 9.1 Check existing E2E coverage
+- Upstream (mocked): `testing/playwright/e2e/upstream/`
+- Downstream (cluster): `testing/playwright/e2e/downstream/`
 
-Search for existing Playwright tests that cover the changed flow:
+Do not run the full suite inside the subagent by default.
 
-```bash
-# Search by feature area
-rg "test.*<feature keyword>" testing/playwright/e2e/ --files-with-matches
-
-# Check page objects for the affected area
-ls testing/playwright/page-objects/
-```
-
-If existing tests already cover the changed behavior, verify they still pass
-(step 9.4) without writing new ones.
-
-### 9.2 Write E2E tests (if not covered)
-
-Follow `.cursor/rules/workflows/playwright-testing.mdc` patterns:
-
-- **Upstream tests** (mocked data, no cluster needed):
-  Place in `testing/playwright/e2e/upstream/`
-  Use `setupForkliftIntercepts(page)` for API mocking
-
-- **Downstream tests** (real cluster required):
-  Place in `testing/playwright/e2e/downstream/`
-  Use `test.describe.serial` when order matters
-
-Patterns to follow:
-- Use Page Object Model from `testing/playwright/page-objects/`
-- Use `test.step()` for named steps in reports
-- Use `data-testid` attributes (not CSS selectors)
-- Use `NavigationHelper` for page navigation
-- Apply version gating with `requireVersion()` if feature is version-specific
-
-### 9.3 Check cluster and downstream test readiness
+### 9.2 Human runs
 
 ```bash
-curl -sf http://localhost:9000 > /dev/null 2>&1
+cd testing && npm run test:upstream
+# and/or
+cd testing && npm run test:downstream
 ```
 
-If no cluster is available:
-- Run upstream tests only (mocked data, always runnable)
-- Log a warning about skipped downstream tests
-- Do not block PR creation -- upstream-only E2E is acceptable for PR submission
+### 9.3 Failures
 
-**Downstream test credentials:** Each user configures their own credentials via
-personal Cursor rules (e.g. `.cursor/rules/personal-providers-credentials.mdc`).
-Generate `testing/.providers.json` and `testing/e2e.env` from those credentials
-if the files don't exist yet.
+Paste log → fix subagent → human re-runs.
 
-### 9.4 Run E2E tests
-
-```bash
-# From testing/ directory
-cd testing && npm run test:upstream  # Always runnable
-cd testing && npm run test:downstream  # Only if cluster + .providers.json available
-```
-
-### 9.5 Advance phase
+### 9.4 Advance
 
 ```bash
 .cursor/skills/dev-helper/scripts/state-cli.sh phase ${TICKET_KEY} send-pr
 ```
 
-Proceed to Phase 10: Send PR.
-Read and follow `phases/10-send-pr.md`.
-
 ## Completion Checklist
 
-Before advancing from this phase, `state-cli.sh phase` validates:
-
-- [ ] `.branch` field set in state
-- [ ] E2E tests pass (or phase explicitly skipped)
+- [ ] E2E written/updated if UI changed, or skip documented
+- [ ] Human-confirmed pass (or skip with reason)

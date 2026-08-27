@@ -8,378 +8,229 @@ description: >-
   or work on next.
 ---
 
-# Dev Helper -- Full Ticket Lifecycle
+<!-- Auto-injected via manually_attached_skills. NEVER read this file with the Read tool. -->
 
-Orchestrates the complete developer workflow from picking up a Jira ticket to
-post-merge cleanup. Each phase is documented in `phases/*.md`.
+# Dev Helper -- Lightweight Subagent Orchestrator
 
-For constants, field IDs, and formulas, see [reference.md](reference.md).
-For setup instructions, see [SETUP.md](SETUP.md).
+Orchestrates the ticket lifecycle by dispatching **phase-specific subagents**
+with fresh context windows. The parent agent stays thin: resolve ticket, read
+state, pick model, build a focused prompt, dispatch, check gates, advance.
 
-## Prerequisites
+- Setup / config / state CLI: [SETUP.md](SETUP.md)
+- First-time install: [SETUP.md](SETUP.md)
+- Constants / field IDs: [reference.md](reference.md)
+- Phase details (fallback only): [phases/quick-ref.md](phases/quick-ref.md)
+- Subagent prompt templates: [phases/prompts/](phases/prompts/)
 
-### One-time setup
+---
 
-See [SETUP.md](SETUP.md) for the full step-by-step guide covering:
+## Output Rules
 
-1. **Jira API credentials** (`~/.jira-creds`)
-2. **GitHub CLI** (`gh auth login`)
-3. **Git remotes** (fork as `origin`, upstream as `upstream`)
-4. **jq** (JSON processor)
-5. **Configuration** (`dev-helper.config.json`)
-6. **Hooks** (copy from `examples/hooks/` -- see SETUP.md)
+**ELIMINATE:** tool-call narration, phase-transition announcements, script
+output echoing, pleasantries, confirming obvious successes.
 
-### Verify setup
+**CONCISE:** phase recaps, design rationale, errors, status updates.
 
-```bash
-source ~/.jira-creds && echo "Jira: OK"
-gh auth status && echo "GitHub: OK"
-git remote -v | grep -q upstream && echo "Remotes: OK"
-which jq && echo "jq: OK"
-source .cursor/skills/dev-helper/scripts/_config.sh && echo "Config: $GH_REPO"
-```
+**FULL DETAIL:** questions to the user; human checklists (reproduce / tests).
 
-## Configuration
+Subagents write full artifacts (`triage.md`, `investigation.md`, etc.). The
+orchestrator only summarizes what the user needs.
 
-### Project config -- `dev-helper.config.json`
+---
 
-Located at `.cursor/skills/dev-helper/dev-helper.config.json`. Contains
-shared constants that are the same for all team members:
+## Orchestration Loop
 
-```json
-{
-  "jira": { "baseUrl", "projectKey", "componentId", "componentName" },
-  "github": { "repo", "upstreamRemote", "forkRemote" },
-  "workflow": { "qaContact", "prLabels", "staleWaitingDays" },
-  "phases": { "gates", "skip" }
-}
-```
+### 1. Resolve ticket
 
-All scripts source `scripts/_config.sh` which reads this file and exports
-the values as shell variables (`$JIRA_BASE_URL`, `$GH_REPO`, `$QA_CONTACT`, etc.).
+- Named ticket (`MTV-XXXX`) → use it.
+- **"work on next"** with no key → ask for a specific ticket.
 
-### Personal secrets -- `~/.jira-creds`
-
-Not committed (lives in home directory). Contains per-developer secrets:
+### 2. Load state + config
 
 ```bash
-JIRA_EMAIL="your-email@redhat.com"
-JIRA_API_TOKEN="your-api-token"
-JIRA_ASSIGNEE_ID="your-account-id"
-```
-
-### Configurable gating
-
-The `phases` config controls how the agent behaves at each phase:
-
-```json
-"phases": {
-  "gates": ["design"],
-  "skip": []
-}
-```
-
-- **`gates`**: Phases where the agent STOPS and waits for explicit user approval
-  before proceeding. Default: `["design"]`.
-- **`skip`**: Phases to skip entirely. Default: `[]`.
-- **All other phases**: Auto-recap -- the agent presents a summary of findings
-  and continues unless the user interrupts.
-
-Examples:
-- Fully autonomous: `"gates": [], "skip": []`
-- Cautious: `"gates": ["investigate", "design", "implement"], "skip": []`
-- Skip E2E: `"gates": ["design"], "skip": ["e2e-test"]`
-
-The orchestrator checks the config before each phase transition. Phase files
-themselves are simple (present findings, advance). Gating logic lives here.
-
-## State Management
-
-Each ticket gets a folder: `.cursor/skills/dev-helper/state/MTV-XXXX/state.json`
-(with phase artifacts like `investigation.md`, `design.md` alongside)
-
-```bash
-# List tracked tickets
-.cursor/skills/dev-helper/scripts/state-cli.sh list
-
-# Show active tickets
-.cursor/skills/dev-helper/scripts/state-cli.sh active
-
-# Get a ticket's state
 .cursor/skills/dev-helper/scripts/state-cli.sh get MTV-XXXX
-
-# Add a PR to monitoring (accepts PR number, MTV-XXXX, or full PR URL)
-.cursor/skills/dev-helper/scripts/state-cli.sh watch 2390
-
-# Mark a ticket as waiting (blocked on external event)
-.cursor/skills/dev-helper/scripts/state-cli.sh wait MTV-XXXX pr-ci-pending
-
-# Resume a ticket (external event resolved)
-.cursor/skills/dev-helper/scripts/state-cli.sh resume MTV-XXXX
-
-# List all waiting tickets
-.cursor/skills/dev-helper/scripts/state-cli.sh waiting
-```
-
-### Waiting States
-
-A ticket enters "waiting" when it reaches a phase where no agent action is
-possible until an external event occurs:
-
-| Reason | Trigger | Phase |
-|--------|---------|-------|
-| `awaiting-info` | Waiting for external reply | ask-more-info |
-| `pr-ci-pending` | CI is running | monitor-pr |
-| `pr-review-pending` | Waiting for human review | monitor-pr |
-| `pr-merge-pending` | Approved, not yet merged | monitor-pr |
-| `rebase-conflicts` | User must resolve conflicts | monitor-pr |
-
-When a ticket is waiting, start a different ticket. Resume waiting tickets by
-saying "resume work on MTV-XXXX" or running `state-cli.sh resume MTV-XXXX`.
-
-The `reconcile.sh` script (runs on session start via hooks) detects:
-- Merged PRs -> auto-transitions Jira and advances phase
-- New Jira comments on `awaiting-info` tickets -> auto-resumes
-- Stale waiting states (>N days) -> flags for follow-up
-
----
-
-## Orchestration Logic
-
-When activated with a ticket (e.g., "work on MTV-5300"):
-
-### 1. Resolve the ticket
-
-If the user says **"work on next"** without a specific ticket key, ask them to
-name a specific ticket to start or resume.
-
-### 2. Check for existing state
-
-```bash
-.cursor/skills/dev-helper/scripts/state-cli.sh get MTV-5300 2>/dev/null
-```
-
-- **State exists**: Read the current `phase` and resume from there.
-- **Phase is `learn`**: Auto-run Phase 11b immediately. The PR is already
-  merged; learning review is required before advancing.
-- **Phase is `track-jira-merged`**: Auto-run Phase 12 immediately without waiting
-  for user prompt. The PR is already merged; there's nothing to gate.
-- **No state**: Initialize (default phase: `triage`) and start from Phase 1.
-
-```bash
-.cursor/skills/dev-helper/scripts/state-cli.sh init MTV-5300 Bug
-```
-
-### 3. Check gating config
-
-Before routing to the phase, read the gating config:
-
-```bash
+# source config for gates/skip/models:
 source .cursor/skills/dev-helper/scripts/_config.sh
-GATES=$(config_get '.phases.gates // [] | join(",")')
-SKIP=$(config_get '.phases.skip // [] | join(",")')
+jq -r '.phases // {}' .cursor/skills/dev-helper/dev-helper.config.json
 ```
 
-- If the current phase is in `skip`: advance to the next phase immediately.
-  **Exception:** The `learn` phase is a hard constraint and MUST be ignored
-  in `skip` even if listed. It can never be auto-skipped.
-- If the current phase is in `gates`: after the phase completes, STOP and wait
-  for user approval before advancing.
-- Otherwise: the phase auto-recaps (presents findings) and advances.
+- **No state** → `state-cli.sh init MTV-XXXX <type>` → phase `triage`
+- **`learn` / `track-jira-merged`** → dispatch immediately (no gate)
+- **`done`** → report summary and stop
 
-### 4. Route to the current phase
+### 3. Skip / gate check
 
-Read and follow the phase file matching the current state:
+- Phase in `phases.skip` → advance (`learn` is NEVER skippable)
+- Phase in `phases.gates` → after subagent completes, STOP for user approval
+- Otherwise → auto-recap and continue to next dispatch
 
-| Phase Value | File to Read |
-|-------------|-------------|
-| `triage` | `phases/01-triage.md` |
-| `investigate` | `phases/02-investigate.md` |
-| `ask-more-info` | `phases/03-ask-more-info.md` |
-| `reproduce` | `phases/04-reproduce.md` |
-| `jira-track` | `phases/05-jira-track.md` |
-| `design` | `phases/06-design-solution.md` |
-| `implement` | `phases/07-implement.md` |
-| `verify` | `phases/08-verify.md` |
-| `e2e-test` | `phases/09-e2e-test.md` |
-| `send-pr` | `phases/10-send-pr.md` |
-| `monitor-pr` | `phases/11-monitor-pr.md` |
-| `learn` | `phases/11b-learn.md` |
-| `track-jira-merged` | `phases/12-track-jira-merged.md` |
-| `done` | Ticket is complete. Report summary. |
+### 4. Dispatch current phase
 
-### 5. Advance phase after completion
+| Phase | How | Prompt template |
+|-------|-----|-----------------|
+| `triage` | Subagent → continues into investigate | [triage-investigate.md](phases/prompts/triage-investigate.md) |
+| `investigate` | Subagent (or already covered by triage group) | same |
+| `ask-more-info` | Orchestrator posts Jira comment + `wait` | (inline) |
+| `reproduce` | **HUMAN checklist** (no subagent) | [reproduce.md](phases/prompts/reproduce.md) |
+| `jira-track` | Subagent (script-heavy) | [jira-track.md](phases/prompts/jira-track.md) |
+| `design` | Subagent (persona-routed) | [design.md](phases/prompts/design.md) |
+| `implement` | Subagent → writes code + unit tests | [implement-verify.md](phases/prompts/implement-verify.md) |
+| `verify` | **HUMAN runs tests**; subagent only if failures pasted | [implement-verify.md](phases/prompts/implement-verify.md) |
+| `e2e-test` | Subagent writes E2E if needed; **HUMAN runs** | [implement-verify.md](phases/prompts/implement-verify.md) |
+| `send-pr` | Subagent | [send-pr.md](phases/prompts/send-pr.md) |
+| `monitor-pr` | Subagent | [monitor-pr-learn.md](phases/prompts/monitor-pr-learn.md) |
+| `learn` | Subagent (or skip for clear+no comments) | [monitor-pr-learn.md](phases/prompts/monitor-pr-learn.md) |
+| `track-jira-merged` | Subagent | [post-merge.md](phases/prompts/post-merge.md) |
 
-After each phase completes successfully, update the state:
+### 5. Build subagent prompt
 
-```bash
-.cursor/skills/dev-helper/scripts/state-cli.sh phase MTV-5300 <next-phase>
+1. Read the prompt template for the phase group.
+2. Inject: `TICKET_KEY`, complexity, workSize, type, paths to state artifacts.
+3. Inject **persona list** (see Persona Routing).
+4. Tell the subagent: read `phases/quick-ref.md` once for its phase(s) only;
+   do NOT re-read SKILL.md; write artifacts; advance state with `state-cli.sh`;
+   return a short bullet summary (findings / next phase / blockers).
+
+### 6. Select model
+
+Read `phases.models` from config (defaults below if missing):
+
+```json
+"models": {
+  "default": "gemini-3.1-pro",
+  "investigate": "inherit",
+  "design": "inherit",
+  "implement": "inherit",
+  "complexOverride": "claude-4.6-opus-max-thinking"
+}
 ```
 
-**Phase transition validation:** The `phase` command validates prerequisites
-before allowing the transition. If required artifacts or state fields are
-missing, it prints the missing items and exits without changing state. Each
-phase doc has a **Completion Checklist** listing what the validator checks.
+| Phase group | Model |
+|-------------|-------|
+| Mechanical: triage, jira-track, send-pr, monitor-pr, learn, post-merge | `default` |
+| Creative: investigate, design, implement, verify | phase key or `inherit` |
+| Complexity `complex` on design/implement | `complexOverride` |
 
-If validation fails, complete the missing step and retry. For recovery
-scenarios (e.g., manually fixing corrupted state), use `--force`:
+If a configured slug is unavailable in this Cursor session, fall back to
+`inherit` and note it in the recap.
 
-```bash
-.cursor/skills/dev-helper/scripts/state-cli.sh phase --force MTV-5300 <phase>
+### 7. Launch Task
+
+```
+Task:
+  subagent_type: generalPurpose
+  model: <selected>
+  run_in_background: false
+  description: "<phase> MTV-XXXX"
+  prompt: <built prompt>
 ```
 
-Key validations:
-- `investigate` requires `triage.md` artifact and `.type` set
-- `implement` through `send-pr` require `.branch` set
-- `monitor-pr` requires `.prNumber` set
-- `learn` requires `.pr.mergedAt` set
-- `track-jira-merged` requires `.learn.status` to be `learned` or `reviewed-skipped`
-- `done` requires previous phase to be `track-jira-merged`
+Do **not** pass parent conversation history. Subagents start fresh.
 
-### 6. Branch safety check
+### 8. After subagent returns
 
-Before any code changes (phases 7-10), verify the current git branch matches the
-state file's `branch` field:
+1. Re-read state (`state-cli.sh get`).
+2. Present a short recap from the subagent summary.
+3. If current phase is gated → ask A) Approve / B) Revise / C) Reject; wait.
+4. Else if next phase is human (`reproduce`, or verify/e2e awaiting run) → emit
+   the human checklist and wait.
+5. Else dispatch the next phase (or stop if waiting / done).
 
-```bash
-current=$(git branch --show-current)
-expected=$(.cursor/skills/dev-helper/scripts/state-cli.sh field ${TICKET_KEY} '.branch')
-if [[ -n "$expected" && "$expected" != "null" && "$current" != "$expected" ]]; then
-  echo "WARNING: On branch $current but ticket expects $expected"
-fi
-```
+---
 
-### 7. Fast-track for straightforward fixes
+## Persona Routing
 
-When the `investigate` phase completes and the fix is obviously straightforward,
-the agent may fast-track by skipping `ask-more-info` and `design`, going
-from `reproduce` through `jira-track` directly to `implement`.
+When building design / implement / verify prompts:
 
-**Fast-track always includes Reproduce (Phase 4) and Jira Track (Phase 5).**
-Visual evidence is mandatory for bugs; sprint/points must always be set.
+| Complexity | Personas to load |
+|------------|------------------|
+| `clear` | Developer + QE only |
+| `complicated` / `complex` | Developer + QE + Architect + UX + Forklift Expert |
 
-**HARD CONSTRAINT -- Complexity overrides:**
+Paths come from `phases-rules/` (project) or prompt template defaults.
+Instruct the subagent to Read only the listed persona files.
 
-The `.complexity` field (set during Phase 1 Triage) determines fast-track
-eligibility:
+---
 
-| Certainty | Fast-track | Design phase | Investigation depth |
-|-----------|-----------|-------------|-------------------|
-| `clear` | Auto-qualifies. If `design` is in `phases.gates`, prompt user: "This is a clear-certainty ticket. Skip design gate?" | Skippable (user prompted if gated) | Minimal -- confirm fix location |
-| `complicated` | Standard criteria (see below) | Per config (default: gated) | Full -- trace data flows, blast radius |
-| `complex` | **FORBIDDEN** | **Always mandatory** regardless of `phases.gates` | Full + Architect blast-radius analysis |
+## Human Phases (orchestrator-owned)
 
-**HARD CONSTRAINT -- Gates override fast-track:**
+### Reproduce (`reproduce`)
 
-Phases listed in `phases.gates` config can NEVER be skipped by fast-track
-unless the user explicitly approves (only prompted for `clear` tickets).
-For `complicated` and `complex` tickets, gates are always honored.
+1. Read `state/${TICKET}/investigation.md` (and triage if useful).
+2. Follow [phases/prompts/reproduce.md](phases/prompts/reproduce.md).
+3. Output a numbered checklist (URLs, clicks, expected vs actual, screenshot
+   paths under `~/Downloads/${TICKET}/repro-*.png`).
+4. Wait for: `reproduced` / `not reproduced` + optional errors/notes.
+5. Write `reproduction.md`, update state, advance to `jira-track`.
+6. Bugs: NEVER skip. If blocked, ask the user — do not auto-advance.
 
-**Criteria for fast-tracking** (ALL must be true):
+### Verify / E2E (after implement subagent)
 
-- `.complexity` is `clear` (set in Phase 1), OR `.complexity` is
-  `complicated` AND all criteria below also pass
-- Root cause is immediately obvious from code inspection
-- No design decisions or trade-offs to evaluate
-- No ambiguity about the correct behavior
-- The phases being skipped are NOT in the `phases.gates` config
-  (unless user approved skipping for a `clear` ticket)
+1. Implement subagent writes tests; does **not** run the full retry loop.
+2. Orchestrator tells the user exactly which commands to run (`npm test`,
+   upstream/downstream E2E if applicable).
+3. User pastes pass/fail output.
+4. On failure → dispatch a small fix subagent with the pasted log only.
+5. On pass → advance (`e2e-test` or `send-pr` per quick-ref).
 
-**When fast-tracking:**
+---
 
-1. Complete the investigation phase as normal
-2. Proceed through reproduce (Phase 4)
-3. Proceed through jira-track (Phase 5) -- set sprint, points, fix version
-4. Skip to `implement` only if `design` is NOT gated (or user approved skip):
+## Lightweight Learn
+
+Before dispatching `learn`:
+
+1. Read `.complexity` and PR number from state.
+2. If complexity is `clear`:
    ```bash
-   .cursor/skills/dev-helper/scripts/state-cli.sh set ${TICKET_KEY} \
-     --argjson skipped '["ask-more-info","design"]' \
-     '.skippedPhases = $skipped'
-   .cursor/skills/dev-helper/scripts/state-cli.sh phase ${TICKET_KEY} implement
+   gh api repos/${GH_REPO}/pulls/${PR_NUMBER}/comments --jq 'length'
    ```
-   If `design` IS in `phases.gates` and user did not approve skip, skip only
-   `ask-more-info` and proceed to `design` normally.
-
-**HARD CONSTRAINT -- Bugs require visual evidence:**
-
-For Bug tickets, Reproduce (Phase 4) is **NEVER skippable**, even when
-fast-tracking. If the cluster is unavailable, the agent MUST ask the user
-before proceeding -- never skip silently.
-
-### 8. Re-evaluation loop
-
-If during Phase 7 (Implement) or Phase 8 (Verify) the agent discovers the
-root cause from investigation was wrong or the design approach doesn't work,
-the pipeline can loop back to Phase 2 (Investigate) with new findings.
-
-- **Max 2 re-evaluation cycles.** Tracked in `.reevaluation.count`.
-- On the third failure, the agent must stop and ask the user.
-- The backward transition uses `--force` to bypass normal phase ordering.
-- The existing branch and partial implementation are preserved — the agent
-  re-investigates with the knowledge gained from the failed attempt.
-
-See steps 7.7 and 8.5 in the respective phase files for the full protocol.
-
-### 9. Waiting behavior
-
-When a ticket enters a **waiting state** (no agent action possible), the agent
-marks it and stops:
-
-```bash
-.cursor/skills/dev-helper/scripts/state-cli.sh wait ${TICKET_KEY} <reason>
-```
-
-Inform the user: "Ticket is waiting on \<reason\>. Pick another ticket to
-work on, or resume this one later."
+   - **0 comments** → set `.learn.status = "reviewed-skipped"`, advance to
+     `track-jira-merged` (no subagent).
+   - **Has comments** → dispatch learn subagent with **comments only** (no full
+     PR diff / no investigation+design unless needed).
+3. If `complicated` / `complex` → full learn subagent per quick-ref.
 
 ---
 
-## Phase Summary
+## Fast-track Rules
 
-| # | Phase | Gate (default) | Fast-track | Complexity effect |
-|---|-------|---------------|------------|-------------------|
-| 1 | Triage (+ claim) | Auto-recap (gate destructive) | Required | Sets `.complexity` + `.workSize` |
-| 2 | Investigate | Auto-recap | Required | clear: minimal depth; complex: full + Architect |
-| 3 | Ask More Info | Waiting (optional) | Skipped | |
-| 4 | Reproduce | Auto-recap (mandatory for bugs) | Required | |
-| 5 | Jira Track | Auto-recap | Required | `.workSize` informs story points |
-| 6 | Design Solution | **GATED** (configurable) | Skipped | complex: always mandatory |
-| 7 | Implement | Auto-retry 3x | Required | |
-| 8 | Verify (unit tests) | Auto-retry 3x | Required | |
-| 9 | E2E Test | Skip if no cluster | Required | |
-| 10 | Send PR | Autonomous (send-pr.sh) | Required | |
-| 11 | Monitor PR | Auto-fix + merge | Required | |
-| 11b | Learn | **HARD CONSTRAINT** (never skippable) | Required | |
-| 12 | Post-Merge Jira | Autonomous (reconcile.sh) | Required | |
+| Certainty | Design | Investigation |
+|-----------|--------|---------------|
+| `clear` | Skippable if not gated | Minimal |
+| `complicated` | Per config (default gated) | Full |
+| `complex` | Always mandatory | Full + Architect |
 
-**Gating:** Only phases in `phases.gates` config block for approval. Default:
-`["design"]`. All other phases auto-recap and continue.
-
-**Learn (hard constraint):** Phase 11b (`learn`) cannot be added to
-`phases.skip`. The agent must review the work done on every ticket before
-advancing. If the PR is merged without learning (manual merge, reconcile),
-the learn phase runs post-merge and opens a separate PR for any rule/doc
-updates. Learnings are also recorded as structured entries in themed files
-under `lessons/` (architecture, security, process, ui-patterns,
-implementation, communication) — searchable across tickets.
-
-**Auto-retry:** Phases 7-8 self-correct up to 3 times on build/lint/test
-failure.
-
-**Merge detection:** `reconcile.sh` runs on session start and detects merged
-PRs. It auto-transitions Jira and advances state.
-
-**send-pr.sh:** Phase 10 uses `scripts/send-pr.sh` which atomically handles
-push, PR creation, Jira transition, PR link, and state update.
-
-**For Bugs:** Phase 4 (Reproduce) is NEVER skippable. Visual evidence is mandatory.
+Bugs always require reproduce (human checklist). Fast-track never skips
+reproduce or jira-track. Gated phases need user approval.
 
 ---
 
-## Permissions
+## Waiting / Branch Safety
 
-The `beforeShellExecution` hook auto-approves all commands except destructive
-git operations (`push --force`, `reset --hard`, `clean -fd`). Do NOT use
-`required_permissions: ["all"]` on shell commands -- the hook handles approval
-automatically. Only use `required_permissions` when a command genuinely needs
-to bypass the sandbox.
+Mark waiting: `state-cli.sh wait MTV-XXXX <reason>`. Suggest another ticket.
+
+Before implement/send-pr: verify git branch matches state `.branch`.
+
+Re-evaluation: implement/verify root-cause wrong → `--force investigate`
+(max 2 cycles).
+
+---
+
+## Phase Routing Table
+
+| Phase | Description |
+|-------|-------------|
+| `triage` | Validate, claim, classify |
+| `investigate` | Root cause, blast radius |
+| `ask-more-info` | External wait |
+| `reproduce` | Human visual evidence |
+| `jira-track` | Sprint / points / fix version |
+| `design` | Multi-perspective plan |
+| `implement` | Code + write unit tests |
+| `verify` | Human runs unit tests |
+| `e2e-test` | Write E2E; human runs |
+| `send-pr` | Push + PR + Jira link |
+| `monitor-pr` | CI / reviews / merge |
+| `learn` | Capture learnings |
+| `track-jira-merged` | Post-merge Jira |
+| `done` | Complete |

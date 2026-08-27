@@ -1,11 +1,14 @@
+<!-- FALLBACK REFERENCE: Use phases/quick-ref.md for normal flow.
+     Read this file ONLY if a step fails or you need error recovery details. -->
+
 # Phase 7: Implement
 
 
 
 **Gate:** Auto-retry 3x on build/lint failure, interrupt only if stuck
 
-Implements the approved design with mechanical verification. Code changes only --
-testing is a separate phase.
+Implements the approved design with mechanical verification. **Writes unit
+tests here**; the human runs `npm test` in Phase 8.
 
 ---
 
@@ -23,8 +26,11 @@ applicable coding standards.
 
 ## Agent Personas
 
-Apply agent personas defined in your project's `phases-rules/07-implement.md`.
-If no phases-rules file exists, apply developer and UX perspectives.
+Use orchestrator-injected personas only:
+- `clear` → Developer (+ QE when writing tests)
+- `complicated` / `complex` → Developer + QE + Architect + UX + domain expert
+
+See `phases-rules/07-implement.md` when present.
 
 ## Steps
 
@@ -150,20 +156,33 @@ Then read and follow `phases/02-investigate.md` with the new findings.
 
 If the root cause is confirmed correct, proceed normally.
 
-### 7.8 Advance phase
+### 7.8 Write unit tests (do not own the test run)
+
+Write or update unit tests for the change:
+
+- `*.test.ts` / `*.test.tsx` in `__tests__/` adjacent to source
+- Mock i18n with project helpers (e.g. `@test-utils/mockI18n`)
+- Cover happy path, edge cases from investigation, and the bug scenario
+
+**Do not** run a full `npm test` retry loop here. The orchestrator asks the
+human to run tests in Phase 8. Optionally smoke a single focused path once
+if helpful, then advance.
+
+### 7.9 Advance phase
 
 ```bash
 .cursor/skills/dev-helper/scripts/state-cli.sh phase ${TICKET_KEY} verify
 ```
 
-Proceed to Phase 8: Verify.
-Read and follow `phases/08-verify.md`.
+Proceed to Phase 8: Verify (human runs tests).
+See `phases/08-verify.md` and `phases/prompts/implement-verify.md`.
 
 ## Completion Checklist
 
 Before advancing from this phase, `state-cli.sh phase` validates:
 
 - [ ] `.branch` field set in state
+- [ ] Unit test files written for the change (when applicable)
 - [ ] Code compiles (`npm run build` passes)
 - [ ] Lint passes (`npm run lint`)
 - [ ] i18n extracted (`npm run i18n`)

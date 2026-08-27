@@ -1,3 +1,6 @@
+<!-- FALLBACK REFERENCE: Use phases/quick-ref.md for normal flow.
+     Read this file ONLY if a step fails or you need error recovery details. -->
+
 # Phase 12: Post-Merge Jira Tracking
 
 
@@ -85,27 +88,10 @@ fi
 Each intermediate is silently ignored if the ticket is already past it.
 Only the final target transition is required to succeed.
 
-### 12.2 Calculate and set story points (skip for Epics)
+### 12.2 Story points
 
-**Epics do not get story points, QA contact, or activity type.**
-
-For non-Epic tickets, calculate based on:
-- **Elapsed time**: From `startedAt` (Phase 1) to `pr.mergedAt`
-- **Complexity**: Investigation depth, files changed, design iterations
-
-| Points | Duration | Complexity |
-|--------|----------|------------|
-| 2 (XS) | Hours to half a day | Trivial change |
-| 5 (S) | 1-2 days | Simple, clear criteria |
-| 8 (M) | 2-4 days | Some research, moderate complexity |
-| 13 (L) | 4-7 days | Complex, new area, significant research |
-| 21 (XL) | >1 week | Should have been broken into smaller tasks |
-
-Present the recommendation, then set:
-
-```bash
-.cursor/skills/dev-helper/scripts/jira-track.sh set-story-points ${TICKET_KEY} <POINTS>
-```
+Story points are set in Phase 5 (Jira Track) and are NEVER recalculated here.
+Phase 5 is the single source of truth for story points.
 
 ### 12.3 Set QA Contact
 
@@ -141,9 +127,7 @@ source .cursor/skills/dev-helper/scripts/_config.sh
 source ~/.jira-creds
 
 if [[ "$TYPE" == "Story" ]]; then
-  PARENT_EPIC=$(curl -s -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
-    "${JIRA_BASE_URL}/rest/api/2/issue/${TICKET_KEY}?fields=parent" \
-    | jq -r '.fields.parent.key // empty')
+  PARENT_EPIC=$(.cursor/skills/dev-helper/scripts/state-cli.sh field ${TICKET_KEY} '.parentEpic // empty' 2>/dev/null)
 
   if [[ -n "$PARENT_EPIC" ]]; then
     OPEN_CHILDREN=$(curl -s -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \

@@ -118,6 +118,46 @@ Edit values as needed:
 | `workflow.qaContact` | QA contact name for Jira assignments |
 | `workflow.prLabels` | Labels to apply to PRs |
 | `workflow.staleWaitingDays` | Days before a "waiting" ticket is flagged stale |
+| `phases.gates` | Phases that stop for user approval (default: `["design"]`) |
+| `phases.skip` | Phases to skip (`learn` cannot be skipped) |
+| `phases.models.default` | Model slug for mechanical subagents (e.g. `gemini-3.1-pro`) |
+| `phases.models.investigate` | Model for investigate (`inherit` = parent model) |
+| `phases.models.design` | Model for design |
+| `phases.models.implement` | Model for implement/verify |
+| `phases.models.complexOverride` | Model for design+implement when complexity is `complex` |
+
+### Gating, models, and token-saving
+
+```json
+"phases": {
+  "gates": ["design"],
+  "skip": [],
+  "models": {
+    "default": "gemini-3.1-pro",
+    "investigate": "inherit",
+    "design": "inherit",
+    "implement": "inherit",
+    "complexOverride": "claude-4.6-opus-max-thinking"
+  }
+}
+```
+
+- **`gates`**: Stop for user approval before continuing (default: design).
+- **`skip`**: Skip phases entirely (`learn` is never skippable).
+- **`models`**: Cursor Task `model` slugs for phase subagents.
+  - Mechanical phases use `default`.
+  - Creative phases use the phase key or `inherit` (parent model).
+  - `complex` tickets use `complexOverride` for design + implement.
+  - Unavailable slug → fall back to `inherit`.
+
+Token-saving defaults (see SKILL.md):
+
+- Parent agent is a **lightweight orchestrator**; phase work runs in **subagents**
+  with fresh context (`phases/prompts/`).
+- **Reproduce** is a human checklist (no Playwright MCP by default).
+- **Verify / E2E**: AI writes tests; human runs them and pastes failures.
+- **Personas**: `clear` → Developer + QE; `complicated`/`complex` → all five.
+- **Learn** on `clear` with zero PR comments → auto `reviewed-skipped`.
 
 ---
 

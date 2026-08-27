@@ -209,25 +209,57 @@ fi
 if [[ "$merged" == "true" ]]; then
   if [[ "$learn_status" == "learned" || "$learn_status" == "reviewed-skipped" ]]; then
     echo "STATUS: MERGED"
+    echo "ACTION: none"
+    echo "DETAILS: PR is merged and learn is complete"
   else
     echo "STATUS: LEARN_PENDING"
+    echo "ACTION: learn"
+    echo "DETAILS: PR merged but learn phase not done -- review work and capture learnings"
   fi
-elif [[ "$is_approved" == "true" && "$ci_passing" == "true" && "$has_conflicts" == "false" && "$needs_rebase" == "false" && "$unresolved" -eq 0 ]]; then
-  if [[ "$learn_ready" == "true" ]]; then
-    echo "STATUS: READY_TO_MERGE"
-  else
-    echo "STATUS: LEARN_PENDING"
-  fi
-elif [[ "$is_approved" == "true" && "$ci_state" == "PENDING" ]]; then
-  echo "STATUS: CI_PENDING"
-elif [[ "$is_approved" == "true" && "$ci_passing" == "false" ]]; then
+elif [[ "$needs_rebase" == "true" ]]; then
+  echo "STATUS: NEEDS_REBASE"
+  echo "ACTION: rebase"
+  echo "DETAILS: Branch is ${behind_count:-0} commits behind main -- rebase and force-push"
+elif [[ "$ci_passing" == "false" && "$ci_state" != "PENDING" ]]; then
   echo "STATUS: CI_FAILING"
+  echo "ACTION: fix-ci"
+  # List failing checks for agent context
+  failing_checks=$(echo "$pr" | jq -r '.commits.nodes[0].commit.statusCheckRollup.contexts.nodes[] |
+    select(.conclusion != "SUCCESS" and .conclusion != "NEUTRAL" and .conclusion != "SKIPPED" and .state != "SUCCESS") |
+    select(.name // .context |
+      test("Handle approval|Handle review|Handle retest|Handle hold|Reset approval|DCO") | not
+    ) | .name // .context' 2>/dev/null | tr '\n' ', ' | sed 's/,$//')
+  echo "DETAILS: Failing checks: ${failing_checks:-unknown}"
 elif [[ "$unresolved" -gt 0 ]]; then
   echo "STATUS: ACTION_NEEDED"
+  echo "ACTION: reply-to-comments"
+  # Output unresolved comment details for agent
+  echo "COMMENTS:"
+  echo "$pr" | jq -r '.reviewThreads.nodes[] | select(.isResolved == false) |
+    .comments.nodes[0] | "  ID:\(.path // "general") | \(.author.login): \(.body | split("\n")[0])"' 2>/dev/null
+  echo "DETAILS: ${unresolved} unresolved thread(s) -- reply to each individually"
 elif [[ "$review_decision" == "CHANGES_REQUESTED" ]]; then
   echo "STATUS: CHANGES_REQUESTED"
+  echo "ACTION: reply-to-comments"
+  echo "DETAILS: Changes requested -- address reviewer feedback"
+elif [[ "$is_approved" == "true" && "$ci_state" == "PENDING" ]]; then
+  echo "STATUS: CI_PENDING"
+  echo "ACTION: none"
+  echo "DETAILS: Approved but CI still running -- wait"
+elif [[ "$is_approved" == "true" && "$ci_passing" == "true" && "$has_conflicts" == "false" && "$unresolved" -eq 0 ]]; then
+  if [[ "$learn_ready" == "true" ]]; then
+    echo "STATUS: READY_TO_MERGE"
+    echo "ACTION: merge"
+    echo "DETAILS: All 6 merge criteria pass -- squash merge and delete branch"
+  else
+    echo "STATUS: LEARN_PENDING"
+    echo "ACTION: learn"
+    echo "DETAILS: All criteria pass except learn -- review work and capture learnings first"
+  fi
 else
   echo "STATUS: WAITING_FOR_REVIEW"
+  echo "ACTION: none"
+  echo "DETAILS: Waiting for reviewer -- no agent action possible"
 fi
 
 if [[ "$needs_rebase" == "true" && "$merged" != "true" ]]; then

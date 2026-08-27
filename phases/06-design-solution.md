@@ -1,3 +1,6 @@
+<!-- FALLBACK REFERENCE: Use phases/quick-ref.md for normal flow.
+     Read this file ONLY if a step fails or you need error recovery details. -->
+
 # Phase 6: Design Solution
 
 
@@ -16,9 +19,14 @@ implementation plan.
 
 ## Agent Personas
 
-Apply agent personas defined in your project's `phases-rules/06-design-solution.md`.
-If no phases-rules file exists, use your own judgment on which perspectives
-(developer, UX, QE, architecture, domain expert) to apply.
+**Orchestrator injects personas by complexity** (do not load all by default):
+
+- **`clear`**: Developer + QE only
+- **`complicated` / `complex`**: Developer + QE + Architect + UX + domain expert
+  (e.g. Forklift Expert)
+
+Apply only the personas listed in the subagent prompt. Project paths live in
+`phases-rules/06-design-solution.md` when present.
 
 ## Steps
 

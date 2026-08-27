@@ -22,7 +22,15 @@
   },
   "phases": {
     "gates": ["design"],
-    "skip": []
+    "skip": [],
+    "models": {
+      "_description": "Subagent model routing. Mechanical phases use default; creative phases use phase key or inherit. complexOverride applies to design+implement when ticket complexity is complex.",
+      "default": "gemini-3.1-pro",
+      "investigate": "inherit",
+      "design": "inherit",
+      "implement": "inherit",
+      "complexOverride": "claude-4.6-opus-max-thinking"
+    }
   },
   "project": {
     "name": "My Project",

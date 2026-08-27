@@ -1,3 +1,6 @@
+<!-- FALLBACK REFERENCE: Use phases/quick-ref.md for normal flow.
+     Read this file ONLY if a step fails or you need error recovery details. -->
+
 # Phase 10: Send PR & Track Jira
 
 
@@ -35,17 +38,6 @@ Run through this checklist before creating the PR:
 - [ ] No console.log statements
 
 ### Quality
-```bash
-npm run lint && npm test
-```
-
-### i18n
-```bash
-npm run i18n
-```
-Stage any locale changes.
-
-### Commit Validation
 ```bash
 npm run validate-commits
 ```

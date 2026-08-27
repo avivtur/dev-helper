@@ -1,5 +1,11 @@
 # Forklift: Learning Rules
 
+## Lightweight clear tickets
+- If complexity is `clear` and the PR has **zero** review comments, set
+  `.learn.status = "reviewed-skipped"` without a learn subagent.
+- If `clear` but comments exist, review **comments only** (expand to specific
+  files only when a comment requires it).
+
 ## Channel 1: Project Rule Update Targets
 
 | Category | Rule update target |

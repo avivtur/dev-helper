@@ -27,7 +27,7 @@ USAGE
 jira_get() {
   local key="${1:?Missing KEY}"
   curl -s -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
-    "${JIRA_BASE_URL}/rest/api/2/issue/${key}" | jq .
+    "${JIRA_BASE_URL}/rest/api/3/issue/${key}" | jq .
 }
 
 jira_update() {
@@ -41,7 +41,7 @@ jira_update() {
   response=$(curl -s -w "\n%{http_code}" -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
     -X PUT -H "Content-Type: application/json" \
     -d "@${tmp}" \
-    "${JIRA_BASE_URL}/rest/api/2/issue/${key}")
+    "${JIRA_BASE_URL}/rest/api/3/issue/${key}")
 
   rm -f "$tmp"
 
@@ -130,8 +130,18 @@ cmd_add_comment() {
   local key="${1:?Missing KEY}"
   local body="${2:?Missing BODY}"
 
+  # API v3 requires Atlassian Document Format (ADF) for comment bodies.
   local payload
-  payload=$(jq -n --arg body "$body" '{body: $body}')
+  payload=$(jq -n --arg body "$body" '{
+    body: {
+      type: "doc",
+      version: 1,
+      content: [{
+        type: "paragraph",
+        content: [{type: "text", text: $body}]
+      }]
+    }
+  }')
   local tmp
   tmp=$(mktemp)
   echo "$payload" > "$tmp"
@@ -139,7 +149,7 @@ cmd_add_comment() {
   curl -s -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
     -X POST -H "Content-Type: application/json" \
     -d "@${tmp}" \
-    "${JIRA_BASE_URL}/rest/api/2/issue/${key}/comment" | jq -r '.id // "OK"'
+    "${JIRA_BASE_URL}/rest/api/3/issue/${key}/comment" | jq -r '.id // "OK"'
 
   rm -f "$tmp"
 }

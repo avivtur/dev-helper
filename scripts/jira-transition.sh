@@ -19,7 +19,7 @@ USAGE
 discover_transitions() {
   local key="${1:?Missing KEY}"
   curl -s -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
-    "${JIRA_BASE_URL}/rest/api/2/issue/${key}/transitions" \
+    "${JIRA_BASE_URL}/rest/api/3/issue/${key}/transitions" \
     | jq '.transitions[] | {id, name: .name, to: .to.name}'
 }
 
@@ -29,7 +29,7 @@ do_transition() {
 
   local transitions
   transitions=$(curl -s -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
-    "${JIRA_BASE_URL}/rest/api/2/issue/${key}/transitions")
+    "${JIRA_BASE_URL}/rest/api/3/issue/${key}/transitions")
 
   local transition_id
   transition_id=$(echo "$transitions" | jq -r \
@@ -55,7 +55,7 @@ do_transition() {
     -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
     -X POST -H "Content-Type: application/json" \
     -d "@${tmp}" \
-    "${JIRA_BASE_URL}/rest/api/2/issue/${key}/transitions")
+    "${JIRA_BASE_URL}/rest/api/3/issue/${key}/transitions")
 
   rm -f "$tmp"
 

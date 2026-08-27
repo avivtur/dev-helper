@@ -3,10 +3,11 @@
 Constants, field IDs, and formulas used across all phases.
 
 > **Note:** Project-level constants (Jira base URL, project key, component ID,
-> GitHub repo, QA contact, labels, stale threshold) are defined in
-> `dev-helper.config.json` and loaded by `scripts/_config.sh`. Personal secrets
-> (email, API token, assignee ID) live in `~/.jira-creds`. See the
-> **Configuration** section in SKILL.md for details.
+> GitHub repo, QA contact, labels, stale threshold, phase gates/models) are
+> defined in `dev-helper.config.json` and loaded by `scripts/_config.sh`.
+> Personal secrets (email, API token, assignee ID) live in `~/.jira-creds`.
+> See [SETUP.md](SETUP.md) for configuration and [SKILL.md](SKILL.md) for
+> orchestrator / subagent behavior.
 
 ---
 
