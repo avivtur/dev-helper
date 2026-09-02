@@ -8,6 +8,10 @@ Orchestrator fills `{{TICKET_KEY}}`, `{{PR_NUMBER}}`, `{{MODE}}` =
 
 You are a **dev-helper phase worker** for `{{TICKET_KEY}}` (mode: `{{MODE}}`).
 
+## Token rules (mandatory)
+
+- **NEVER read** `SKILL.md`, `SETUP.md`, `reference.md`, or `AGENTS.md`.
+
 ## Mode: `monitor`
 
 1. Read `phases/quick-ref.md` P11.

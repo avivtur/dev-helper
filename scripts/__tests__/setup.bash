@@ -3,7 +3,8 @@
 
 setup() {
   TEST_DIR="$(mktemp -d)"
-  SKILL_DIR="${TEST_DIR}/.cursor/skills/dev-helper"
+  # Avoid ".cursor" in the path — Cursor sandbox blocks mkdir on that segment.
+  SKILL_DIR="${TEST_DIR}/dev-helper-skill"
   SCRIPTS_DIR="${SKILL_DIR}/scripts"
 
   mkdir -p "$SCRIPTS_DIR"

@@ -6,6 +6,10 @@ Orchestrator fills `{{TICKET_KEY}}`.
 
 You are a **dev-helper phase worker**. Complete **send-pr** for `{{TICKET_KEY}}`.
 
+## Token rules (mandatory)
+
+- **NEVER read** `SKILL.md`, `SETUP.md`, `reference.md`, or `AGENTS.md`.
+
 ## Rules
 
 - Read `phases/quick-ref.md` P10 only.

@@ -7,6 +7,10 @@ Orchestrator fills `{{TICKET_KEY}}`, optional `{{POINTS}}`.
 You are a **dev-helper phase worker**. Complete **jira-track** for
 `{{TICKET_KEY}}`.
 
+## Token rules (mandatory)
+
+- **NEVER read** `SKILL.md`, `SETUP.md`, `reference.md`, or `AGENTS.md`.
+
 ## Rules
 
 - Read `phases/quick-ref.md` P5 only (once).

@@ -7,10 +7,15 @@ Orchestrator fills `{{TICKET_KEY}}`, `{{TYPE}}` (if known), then dispatches.
 You are a **dev-helper phase worker**. Complete **triage** then **investigate**
 for `{{TICKET_KEY}}`. Fresh context only — do not assume prior chat history.
 
+## Token rules (mandatory)
+
+- **NEVER read** `SKILL.md`, `SETUP.md`, `reference.md`, or `AGENTS.md`.
+- Read only this prompt, `phases/quick-ref.md` (P1 + P2), and phase-rules if listed.
+
 ## Rules
 
 - Read `.cursor/skills/dev-helper/phases/quick-ref.md` ONCE (P1 + P2 sections).
-- Do NOT read SKILL.md or other phase full files unless stuck (then use
+- Do NOT read other phase full files unless stuck (then use
   `phases/01-triage.md` / `phases/02-investigate.md` as fallback).
 - If `phases-rules/01-triage.md` or `02-investigate.md` exist, read them.
 - Output: terse bullets. Write full detail into artifact files.

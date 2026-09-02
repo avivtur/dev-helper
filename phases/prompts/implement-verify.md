@@ -9,6 +9,12 @@ For `fix-tests`, also inject `{{TEST_OUTPUT}}` (user-pasted log).
 
 You are a **dev-helper phase worker** for `{{TICKET_KEY}}` (mode: `{{MODE}}`).
 
+## Token rules (mandatory)
+
+- **NEVER read** `SKILL.md`, `SETUP.md`, `reference.md`, or `AGENTS.md`.
+- The orchestrator prompt + this file + `quick-ref.md` are your only skill docs.
+- Violating this wastes tokens and fails the workflow.
+
 ## Rules
 
 - Read `phases/quick-ref.md` P7 / P8 / P9 as needed for this mode.
@@ -22,7 +28,9 @@ You are a **dev-helper phase worker** for `{{TICKET_KEY}}` (mode: `{{MODE}}`).
   implementing. Leave `npm test` / E2E **for the human** unless mode is
   `fix-tests` (then fix from pasted output, max 1-2 attempts).
 
-## PERSONAS (read ONLY these)
+## PERSONAS (read ONLY these — exact list from orchestrator)
+
+Do **not** read any other `.cursor/rules/agents/*.mdc` file unless listed below.
 
 {{PERSONAS}}
 

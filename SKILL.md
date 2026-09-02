@@ -87,9 +87,11 @@ jq -r '.phases // {}' .cursor/skills/dev-helper/dev-helper.config.json
 1. Read the prompt template for the phase group.
 2. Inject: `TICKET_KEY`, complexity, workSize, type, paths to state artifacts.
 3. Inject **persona list** (see Persona Routing).
-4. Tell the subagent: read `phases/quick-ref.md` once for its phase(s) only;
-   do NOT re-read SKILL.md; write artifacts; advance state with `state-cli.sh`;
-   return a short bullet summary (findings / next phase / blockers).
+4. Prepend to every subagent prompt (all phases):
+   `CRITICAL: Do NOT read SKILL.md, SETUP.md, reference.md, or AGENTS.md.`
+5. Tell the subagent: read `phases/quick-ref.md` once for its phase(s) only;
+   write artifacts; advance state with `state-cli.sh`; return a short bullet
+   summary (findings / next phase / blockers).
 
 ### 6. Select model
 
@@ -150,6 +152,27 @@ When building design / implement / verify prompts:
 Paths come from `phases-rules/` (project) or prompt template defaults.
 Instruct the subagent to Read only the listed persona files.
 
+**Orchestrator must replace `{{PERSONAS}}` with a copy-paste block** (never
+“read all personas”, never “read 5 persona files”, never omit paths). Subagents
+must not substitute other agent files (e.g. Security Reviewer ≠ Architect).
+
+**`clear` — paste into `{{PERSONAS}}`:**
+```
+- `.cursor/rules/agents/developer.mdc`
+- `.cursor/rules/agents/qe-agent.mdc`
+```
+
+**`complicated` / `complex` — paste into `{{PERSONAS}}`:**
+```
+- `.cursor/rules/agents/developer.mdc`
+- `.cursor/rules/agents/qe-agent.mdc`
+- `.cursor/rules/agents/ux-reviewer.mdc`
+- `.cursor/rules/agents/architect.mdc`
+- `.cursor/rules/agents/forklift-expert.mdc`
+```
+
+Return summary must list **exactly** these paths — no additions, no substitutions.
+
 ---
 
 ## Human Phases (orchestrator-owned)
@@ -169,7 +192,8 @@ Instruct the subagent to Read only the listed persona files.
 1. Implement subagent writes tests; does **not** run the full retry loop.
 2. Orchestrator tells the user exactly which commands to run (`npm test`,
    upstream/downstream E2E if applicable).
-3. User pastes pass/fail output.
+3. **Wait** for the user to paste pass/fail output — do **not** run tests
+   yourself unless the user explicitly asks you to.
 4. On failure → dispatch a small fix subagent with the pasted log only.
 5. On pass → advance (`e2e-test` or `send-pr` per quick-ref).
 
