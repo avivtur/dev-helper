@@ -3,6 +3,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import type { TicketState } from '../types.js';
+import {
+  buildWorkOnTicketPrompt,
+  orchestratorInstructions,
+} from '../orchestratorPrompt.js';
+
+export { buildWorkOnTicketPrompt, orchestratorInstructions };
 
 const SKILL_DIR = process.env.SKILL_DIR ?? '';
 const WORKSPACE_DIR = process.env.WORKSPACE_DIR ?? '';
@@ -72,7 +78,9 @@ function readStateFiles(): TicketState[] {
 export const TOOL_DEFINITIONS = [
   {
     name: 'work-on-ticket',
-    description: 'Initialize or resume work on a Jira ticket. Returns the current state and phase routing information.',
+    description:
+      'Initialize or resume a Jira ticket. Returns state, phase, and orchestratorInstructions ' +
+      '(subagent dispatch, human reproduce/verify, scripts — parent must NOT do phase work inline).',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -143,7 +151,9 @@ export async function handleToolCall(
           branch: state.branch,
           waiting: state.waiting,
           prNumber: state.prNumber,
-          message: `Ticket ${ticket} is at phase "${state.phase}". Read and follow the phase file to resume.`,
+          complexity: (state as { complexity?: string }).complexity ?? null,
+          orchestratorInstructions: orchestratorInstructions(ticket, state.phase),
+          message: `Ticket ${ticket} at phase "${state.phase}". Follow orchestratorInstructions — dispatch Task subagents; do not do phase work inline.`,
         }, null, 2);
       } catch {
         const ticketType = await fetchTicketType(ticket);
@@ -157,7 +167,8 @@ export async function handleToolCall(
               ticket: state.ticket,
               type: state.type,
               phase: state.phase,
-              message: `Initialized ${ticket} (${ticketType}) at phase "triage". Read and follow phases/01-triage.md.`,
+              orchestratorInstructions: orchestratorInstructions(ticket, state.phase),
+              message: `Initialized ${ticket} (${ticketType}) at phase "triage". Follow orchestratorInstructions — dispatch Task for triage+investigate; do not work inline.`,
             }, null, 2);
           } catch (initErr) {
             return JSON.stringify({
@@ -170,7 +181,8 @@ export async function handleToolCall(
         return JSON.stringify({
           status: 'new',
           ticket,
-          message: `No state found for ${ticket} and could not fetch type from Jira. Initialize manually: state-cli.sh init ${ticket} <type>. Then start from Phase 1 (triage).`,
+          orchestratorInstructions: orchestratorInstructions(ticket, 'triage'),
+          message: `No state for ${ticket}. Run: state-cli.sh init ${ticket} <type>. Then follow orchestratorInstructions — Task subagent for triage+investigate.`,
         }, null, 2);
       }
     }

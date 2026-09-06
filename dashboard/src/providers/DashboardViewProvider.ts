@@ -20,6 +20,7 @@ import {
   ACCESSIBILITY_HINT,
   ComposerAutomationService,
 } from '../services/ComposerAutomationService.js';
+import { buildWorkOnTicketPrompt } from '../orchestratorPrompt.js';
 
 export class DashboardViewProvider implements vscode.WebviewViewProvider {
   private view?: vscode.WebviewView;
@@ -106,9 +107,7 @@ export class DashboardViewProvider implements vscode.WebviewViewProvider {
     ticket: string,
     mode: 'start' | 'resume',
   ): Promise<void> {
-    const prompt = mode === 'resume'
-      ? `resume work on ${ticket}`
-      : `work on ${ticket}`;
+    const prompt = buildWorkOnTicketPrompt(ticket, mode);
     const result = await this.composerAutomation.sendAndSubmit(prompt);
 
     switch (result) {

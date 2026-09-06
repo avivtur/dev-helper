@@ -16,6 +16,27 @@ Orchestrates the ticket lifecycle by dispatching **phase-specific subagents**
 with fresh context windows. The parent agent stays thin: resolve ticket, read
 state, pick model, build a focused prompt, dispatch, check gates, advance.
 
+**Strict rules:** [phases/orchestrator-brief.md](phases/orchestrator-brief.md) — also returned by `work-on-ticket` MCP as `orchestratorInstructions`.
+
+---
+
+## Strict Rules (non-negotiable)
+
+The parent agent **acts as orchestrator only**. This is not optional and not an error path — it is how every ticket runs.
+
+| Phase work | Who |
+|------------|-----|
+| triage, investigate, jira-track, design, implement, send-pr, monitor, learn, post-merge | **Task subagent** + `phases/prompts/` + `resolve-model.sh` |
+| reproduce | **Human** checklist (parent prints; no Task, no Playwright MCP) |
+| verify, e2e-test run | **Human** runs `npm test` / Playwright; parent waits for output |
+| state init, claim, send-pr, monitor scripts | **Subagent or script** — never parent inline |
+
+**Parent MUST NOT:** edit `src/` or tests, run `npm test`, use Playwright MCP, read full `phases/01-*.md` files, skip gates, or `gh pr create` manually.
+
+**Parent MUST:** call `work-on-ticket` MCP (or follow dashboard prompt), read `orchestratorInstructions`, dispatch Task per phase, apply persona routing, get Opus approval when `needsApproval`.
+
+Dashboard and MCP both route here — if you started from the dashboard button, you still follow this table.
+
 - Setup / config / state CLI: [SETUP.md](SETUP.md)
 - First-time install: [SETUP.md](SETUP.md)
 - Constants / field IDs: [reference.md](reference.md)
