@@ -120,11 +120,15 @@ Edit values as needed:
 | `workflow.staleWaitingDays` | Days before a "waiting" ticket is flagged stale |
 | `phases.gates` | Phases that stop for user approval (default: `["design"]`) |
 | `phases.skip` | Phases to skip (`learn` cannot be skipped) |
-| `phases.models.default` | Model slug for mechanical subagents (e.g. `gemini-3.1-pro`) |
-| `phases.models.investigate` | Model for investigate (`inherit` = parent model) |
-| `phases.models.design` | Model for design |
-| `phases.models.implement` | Model for implement/verify |
-| `phases.models.complexOverride` | Model for design+implement when complexity is `complex` |
+| `phases.models.default` | Cheapest tier — Composer (`composer-2.5`); all mechanical phases + `clear` creative |
+| `phases.models.medium` | Medium tier — Grok (`cursor-grok-4.6-high`); `complicated` creative phases |
+| `phases.models.strong` | Strong tier — Opus (`claude-4.6-opus-max-thinking`); `complex` creative — **requires your approval before dispatch** |
+
+Resolve at runtime:
+
+```bash
+.cursor/skills/dev-helper/scripts/resolve-model.sh design complex --json
+```
 
 ### Gating, models, and token-saving
 
@@ -133,22 +137,21 @@ Edit values as needed:
   "gates": ["design"],
   "skip": [],
   "models": {
-    "default": "gemini-3.1-pro",
-    "investigate": "inherit",
-    "design": "inherit",
-    "implement": "inherit",
-    "complexOverride": "claude-4.6-opus-max-thinking"
+    "default": "composer-2.5",
+    "medium": "cursor-grok-4.6-high",
+    "strong": "claude-4.6-opus-max-thinking"
   }
 }
 ```
 
 - **`gates`**: Stop for user approval before continuing (default: design).
 - **`skip`**: Skip phases entirely (`learn` is never skippable).
-- **`models`**: Cursor Task `model` slugs for phase subagents.
-  - Mechanical phases use `default`.
-  - Creative phases use the phase key or `inherit` (parent model).
-  - `complex` tickets use `complexOverride` for design + implement.
-  - Unavailable slug → fall back to `inherit`.
+- **`models`**: Three tiers — cheapest first; scale up by ticket complexity.
+  - `clear` → Composer (automatic)
+  - `complicated` → Grok (automatic)
+  - `complex` → Opus recommended — **orchestrator MUST ask you before dispatch**
+  - Mid-ticket escalation to Grok/Opus → ask A/B/C/D menu (see SKILL.md)
+  - Unavailable slug → fall back to `composer-2.5`
 
 Token-saving defaults (see SKILL.md):
 

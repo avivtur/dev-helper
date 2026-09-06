@@ -39,3 +39,17 @@ context — inject only what that phase needs.
 - UX: .cursor/rules/agents/ux-reviewer.mdc
 - Forklift Expert: .cursor/rules/agents/forklift-expert.mdc
 ```
+
+## Model tiers (orchestrator resolves before dispatch)
+
+```bash
+scripts/resolve-model.sh <phase> <complexity> --json
+```
+
+| Complexity | Subagent model | Approval |
+|--------------|----------------|----------|
+| `clear` | `composer-2.5` | automatic |
+| `complicated` | `cursor-grok-4.6-high` | automatic |
+| `complex` | `claude-4.6-opus-max-thinking` | **user must approve Opus first** |
+
+Mechanical phases (jira-track, send-pr, …) always use `composer-2.5`.

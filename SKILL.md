@@ -95,26 +95,66 @@ jq -r '.phases // {}' .cursor/skills/dev-helper/dev-helper.config.json
 
 ### 6. Select model
 
-Read `phases.models` from config (defaults below if missing):
+Read `phases.models` from config. Resolve with:
+
+```bash
+.cursor/skills/dev-helper/scripts/resolve-model.sh <phase> <complexity> --json
+```
+
+Also read `.complexity` from state (`state-cli.sh field MTV-XXXX '.complexity // "clear"'`).
+
+**Default config:**
 
 ```json
 "models": {
-  "default": "gemini-3.1-pro",
-  "investigate": "inherit",
-  "design": "inherit",
-  "implement": "inherit",
-  "complexOverride": "claude-4.6-opus-max-thinking"
+  "default": "composer-2.5",
+  "medium": "cursor-grok-4.6-high",
+  "strong": "claude-4.6-opus-max-thinking"
 }
 ```
 
-| Phase group | Model |
-|-------------|-------|
-| Mechanical: triage, jira-track, send-pr, monitor-pr, learn, post-merge | `default` |
-| Creative: investigate, design, implement, verify | phase key or `inherit` |
-| Complexity `complex` on design/implement | `complexOverride` |
+**Tier policy (cheapest first):**
 
-If a configured slug is unavailable in this Cursor session, fall back to
-`inherit` and note it in the recap.
+| Tier | Slug | When |
+|------|------|------|
+| **default** | `composer-2.5` | All mechanical phases; `clear` creative phases |
+| **medium** | `cursor-grok-4.6-high` | `complicated` creative phases |
+| **strong** | `claude-4.6-opus-max-thinking` | `complex` design / implement / investigate |
+
+| Phase group | Model rule |
+|-------------|------------|
+| Mechanical: jira-track, send-pr, monitor-pr, learn, post-merge | always `default` |
+| Creative: triage+investigate, design, implement, verify fix-tests | tier from `.complexity` |
+
+**Approval gate (HARD):**
+
+- **Opus (`strong`)** — NEVER dispatch without explicit user approval in this
+  chat. Stop and ask:
+  ```
+  Subagent model for <phase> (complexity=complex):
+  Recommended: claude-4.6-opus-max-thinking — big feature / hard design or implement
+  A) Approve Opus
+  B) Use Grok (medium)
+  C) Stay on Composer (cheapest)
+  D) Other slug (you specify)
+  ```
+- After approval, store in state:
+  ```bash
+  state-cli.sh set MTV-XXXX \
+    --arg phase design --arg model claude-4.6-opus-max-thinking \
+    '.models.approved[$phase] = $model'
+  ```
+- Reuse stored approval for the same ticket+phase in this session unless the
+  user overrides.
+
+**Escalation mid-ticket:** If a subagent fails or you want a stronger model
+on a `clear`/`complicated` ticket, STOP and ask the same A/B/C/D menu — do
+not auto-upgrade to Grok or Opus.
+
+**Composer + Grok** on `clear` / `complicated` dispatch automatically (no gate).
+Always mention the chosen model in the phase recap: `model=<slug> tier=<tier>`.
+
+If a slug is unavailable in Cursor, fall back to `composer-2.5` and note it.
 
 ### 7. Launch Task
 
