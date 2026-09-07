@@ -19,6 +19,9 @@ Default persona paths (project may override via phases-rules):
 
 Persona routing: `clear` → Developer + QE; `complicated`/`complex` → all five.
 
+**Artifact paths (mandatory):** Write/read only under
+`.cursor/skills/dev-helper/state/${TICKET_KEY}/` — never repo-root `state/`.
+
 ---
 
 ## P1: Triage
@@ -29,7 +32,7 @@ Persona routing: `clear` → Developer + QE; `complicated`/`complex` → all fiv
 
 **Classify:** `clear` (solution obvious: typo, null check, enum, CSS, add field, new provider via checklist) · `complicated` (need investigation: status logic, validation gap, perf regression) · `complex` (shape unknown: new CRD UX, redesign flow, evolving API). Work size: `small`(1-3 files) / `medium`(4-10) / `large`(10+). Default: `complicated`/`medium`.
 
-**State:** `.type`, `.complexity`, `.workSize`. **Write:** `state/${TICKET_KEY}/triage.md`
+**State:** `.type`, `.complexity`, `.workSize`. **Write:** `.cursor/skills/dev-helper/state/${TICKET_KEY}/triage.md`
 **Advance:** Valid→`phase investigate` · Needs info→`wait awaiting-info` · Wrong team/dup/invalid→**gate: user confirm**→`phase done`
 
 ---
@@ -41,7 +44,7 @@ Persona routing: `clear` → Developer + QE; `complicated`/`complex` → all fiv
 **Agent:** Fetch ticket + comments + attachments. Discover backend PRs: `customfield_10875` → `issuelinks` → `parent` → children JQL → recurse child Epics (max 3 levels). `gh pr diff <PR#> --repo kubev2v/forklift`. Search UI codebase. Blast radius: Architect + `.cursor/rules/frontend/` when personas include Architect. Domain: Forklift Expert when listed. Gaps → `ask-more-info`.
 
 **State:** `.investigation.findings`, `.rootCause`, `.affectedFiles`, `.backendPRs`, `.completedAt`
-**Write:** `state/${TICKET_KEY}/investigation.md`
+**Write:** `.cursor/skills/dev-helper/state/${TICKET_KEY}/investigation.md`
 **Advance:** Bug→`phase reproduce` (ALWAYS) · Non-bug+UI→`phase reproduce` · Non-bug no UI→`phase jira-track`
 
 ---
@@ -70,7 +73,7 @@ browser + screenshots.** No Playwright MCP automation by default.
 **Optional:** User may still ask the agent to drive Playwright MCP; treat as
 exceptional override, not the default path.
 
-**Write:** `state/${TICKET_KEY}/reproduction.md` (+ optional `reproduction-script.ts`)
+**Write:** `.cursor/skills/dev-helper/state/${TICKET_KEY}/reproduction.md` (+ optional `reproduction-script.ts`)
 **Advance:** `phase jira-track`
 
 ---
@@ -95,7 +98,7 @@ radius for new entity/provider (when Architect listed). Check `@forklift-ui/type
 gaps. `CreatePlan` template: Problem, Approach, Alternatives, Scope, Test Plan, Risks.
 **HARD CONSTRAINT:** If alternatives unresolved → STOP, ask user.
 If gated: A) Approve / B) Revise / C) Reject — wait for explicit choice.
-**Write:** `state/${TICKET_KEY}/design.md` (only after approval)
+**Write:** `.cursor/skills/dev-helper/state/${TICKET_KEY}/design.md` (only after approval)
 **Post-design:** Switch to **Agent mode** → `phase implement`
 
 ---
@@ -194,5 +197,5 @@ Do not burn tokens on automated 3x test retry loops inside one long context.
 **Purpose:** Final Jira updates after merge.
 **Run:** `scripts/post-merge.sh ${TICKET_KEY}` → status (Bug→MODIFIED, Story→Done), QA contact, activity type, release note type, parent Epic Done check, summary generation.
 **Agent:** Only write release note text. Bug: activity=Quality/Stability/Reliability, note=Bug Fix. Story: activity=Product/Portfolio Work, note=Enhancement/Feature. Epic→Done only when ALL children Done (JQL).
-**Write:** `state/${TICKET_KEY}/summary.md`
+**Write:** `.cursor/skills/dev-helper/state/${TICKET_KEY}/summary.md`
 **Advance:** `state-cli.sh phase ${TICKET_KEY} done`

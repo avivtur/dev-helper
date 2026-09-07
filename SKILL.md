@@ -240,12 +240,12 @@ Return summary must list **exactly** these paths — no additions, no substituti
 
 ### Reproduce (`reproduce`)
 
-1. Read `state/${TICKET}/investigation.md` (and triage if useful).
+1. Read `.cursor/skills/dev-helper/state/${TICKET}/investigation.md` (and triage if useful).
 2. Follow [phases/prompts/reproduce.md](phases/prompts/reproduce.md).
 3. Output a numbered checklist (URLs, clicks, expected vs actual, screenshot
    paths under `~/Downloads/${TICKET}/repro-*.png`).
 4. Wait for: `reproduced` / `not reproduced` + optional errors/notes.
-5. Write `reproduction.md`, update state, advance to `jira-track`.
+5. Write `.cursor/skills/dev-helper/state/${TICKET}/reproduction.md`, update state, advance to `jira-track`.
 6. Bugs: NEVER skip. If blocked, ask the user — do not auto-advance.
 
 ### Verify / E2E (after implement subagent)

@@ -29,7 +29,7 @@ See also: `phases/prompts/reproduce.md`.
 
 - Console running and connected to a cluster (`npm run console` or real cluster URL)
 - Dev server running (`npm start`) if testing against local code
-- Investigation artifact available (`state/${TICKET_KEY}/investigation.md`)
+- Investigation artifact available (`.cursor/skills/dev-helper/state/${TICKET_KEY}/investigation.md`)
 
 ## Steps
 
@@ -57,7 +57,7 @@ network notes and confirmation that screenshots were saved.
 
 ### 4.3 Save reproduction artifact
 
-Write `state/${TICKET_KEY}/reproduction.md` with steps, result, evidence paths,
+Write `.cursor/skills/dev-helper/state/${TICKET_KEY}/reproduction.md` with steps, result, evidence paths,
 and any errors. Optionally add `reproduction-script.ts` if the user or agent
 provides reusable Playwright steps (optional, not required for advance).
 
@@ -88,5 +88,5 @@ MCP (`browser_navigate`, `browser_snapshot`, `browser_click`,
 
 Before advancing from this phase, `state-cli.sh phase` validates:
 
-- [ ] For Bug tickets: `state/${TICKET_KEY}/reproduction-script.ts` or `reproduction.md` exists
+- [ ] For Bug tickets: `.cursor/skills/dev-helper/state/${TICKET_KEY}/reproduction-script.ts` or `reproduction.md` exists
 - [ ] Screenshots saved (recommended but not enforced by script)

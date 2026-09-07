@@ -37,4 +37,5 @@ When `work-on-ticket` MCP or the dashboard starts a ticket, follow this.
 | send-pr | Task → `phases/prompts/send-pr.md` |
 | monitor-pr / learn / post-merge | Task → matching prompt template |
 
-Parent recaps between phases. Subagents write artifacts under `state/<TICKET>/`.
+Parent recaps between phases. Subagents write artifacts under
+`.cursor/skills/dev-helper/state/<TICKET>/` — **never** repo-root `state/`.

@@ -15,13 +15,13 @@ You are a **dev-helper phase worker**. Complete **design** for `{{TICKET_KEY}}`
 ## Rules
 
 - Read `phases/quick-ref.md` P6 only.
-- Read `state/{{TICKET_KEY}}/investigation.md` (and triage.md if useful).
+- Read `.cursor/skills/dev-helper/state/{{TICKET_KEY}}/investigation.md` (and triage.md if useful).
 - If `phases-rules/06-design-solution.md` exists, read it — but **only apply
   the personas listed below** (orchestrator already filtered by complexity).
 - Switch to Plan mode (`SwitchMode` → `plan`) before designing.
 - Use CreatePlan: Problem, Approach, Alternatives, Scope, Test Plan, Risks.
 - If alternatives unresolved → STOP and ask orchestrator/user.
-- Write `state/{{TICKET_KEY}}/design.md` **only after** approval signal in your
+- Write `.cursor/skills/dev-helper/state/{{TICKET_KEY}}/design.md` **only after** approval signal in your
   prompt, OR produce the plan and return `awaiting-approval` without advancing.
 
 ## PERSONAS (read ONLY these files — exact list from orchestrator)

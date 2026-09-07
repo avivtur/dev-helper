@@ -28,7 +28,7 @@ for `{{TICKET_KEY}}`. Fresh context only — do not assume prior chat history.
 3. Evaluate clarity; classify complexity (`clear` / `complicated` / `complex`)
    and workSize (`small` / `medium` / `large`).
 4. Search duplicates; verify UI ownership; note backend deps lightly.
-5. Write `state/{{TICKET_KEY}}/triage.md`.
+5. Write `.cursor/skills/dev-helper/state/{{TICKET_KEY}}/triage.md`.
 6. Set state fields: `.type`, `.complexity`, `.workSize`.
 7. Advance: valid → `investigate`; needs info → `ask-more-info` + wait;
    invalid/dup → stop and report for user gate.
@@ -40,7 +40,8 @@ for `{{TICKET_KEY}}`. Fresh context only — do not assume prior chat history.
    children; max 3 levels). Use `gh pr view/diff` on backend repo from config.
 3. Search UI codebase; for non-clear tickets run blast radius (Architect if
    personas include it — see PERSONAS below).
-4. Write `state/{{TICKET_KEY}}/investigation.md`.
+4. Write `.cursor/skills/dev-helper/state/{{TICKET_KEY}}/investigation.md`.
+   Download attachments to `.cursor/skills/dev-helper/state/{{TICKET_KEY}}/attachments/` if needed.
 5. Set `.investigation.findings`, `.rootCause`, `.affectedFiles`, `.backendPRs`,
    `.completedAt`.
 6. Advance: Bug → `reproduce`; Story with UI → `reproduce`; else → `jira-track`.

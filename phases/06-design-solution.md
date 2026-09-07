@@ -184,4 +184,4 @@ After the plan is approved, persist the design and advance:
 Before advancing from this phase, `state-cli.sh phase` validates:
 
 - [ ] `.investigation.completedAt` field set (investigation was done before design)
-- [ ] `state/${TICKET_KEY}/design.md` artifact written (step 6.7)
+- [ ] `.cursor/skills/dev-helper/state/${TICKET_KEY}/design.md` artifact written (step 6.7)

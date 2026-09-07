@@ -187,6 +187,6 @@ ask-more-info (Phase 3) and returned here, the same routing applies.
 
 Before advancing from this phase, `state-cli.sh phase` validates:
 
-- [ ] `state/${TICKET_KEY}/investigation.md` artifact written
+- [ ] `.cursor/skills/dev-helper/state/${TICKET_KEY}/investigation.md` artifact written
 - [ ] `.investigation.completedAt` field set in state
 - [ ] `.investigation.findings` and `.investigation.rootCause` populated

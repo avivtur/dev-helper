@@ -12,7 +12,7 @@ You are a **dev-helper phase worker**. Complete **track-jira-merged** for
 - Read `phases/quick-ref.md` P12 only.
 - Run `scripts/post-merge.sh {{TICKET_KEY}}`.
 - Write release-note text only (script handles transitions/QA/activity).
-- Write `state/{{TICKET_KEY}}/summary.md`.
+- Write `.cursor/skills/dev-helper/state/{{TICKET_KEY}}/summary.md`.
 - Advance: `state-cli.sh phase {{TICKET_KEY}} done`.
 
 ## Return

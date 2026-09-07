@@ -2,7 +2,7 @@
 
 **No subagent.** Orchestrator emits this checklist for the user.
 
-Fill from `state/{{TICKET_KEY}}/investigation.md` and triage.
+Fill from `.cursor/skills/dev-helper/state/{{TICKET_KEY}}/investigation.md` and triage.
 
 ---
 
@@ -44,7 +44,7 @@ Fill from `state/{{TICKET_KEY}}/investigation.md` and triage.
 
 ## After user replies
 
-1. Write `state/{{TICKET_KEY}}/reproduction.md` (steps, result, evidence paths,
+1. Write `.cursor/skills/dev-helper/state/{{TICKET_KEY}}/reproduction.md` (steps, result, evidence paths,
    console/network notes).
 2. Optionally note script path if user provided one; otherwise steps in the md
    are enough.

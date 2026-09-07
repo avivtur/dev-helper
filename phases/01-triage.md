@@ -235,7 +235,7 @@ duplicates, blockers, scope). Use the Write tool.
 
 Before advancing from this phase, `state-cli.sh phase` validates:
 
-- [ ] `state/${TICKET_KEY}/triage.md` artifact written (step 1.10)
+- [ ] `.cursor/skills/dev-helper/state/${TICKET_KEY}/triage.md` artifact written (step 1.10)
 - [ ] `.type` field set in state (step 1.2)
 
 ### 1.11 Advance phase
