@@ -31,6 +31,8 @@ ln -s "$(pwd)" ~/.cursor/extensions/dev-helper-dashboard
 
 Then in Cursor, say: **"work on MTV-5300"**
 
+**Token cost / team principles:** [docs/TOKEN-OPTIMIZATION.md](docs/TOKEN-OPTIMIZATION.md)
+
 ## Prerequisites
 
 - `jq`, `gh` (GitHub CLI), `git`, `curl`
