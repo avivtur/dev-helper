@@ -16,6 +16,7 @@ You are a **dev-helper phase worker**. Complete **design** for `{{TICKET_KEY}}`
 
 - Read `phases/quick-ref.md` P6 only.
 - Read `.cursor/skills/dev-helper/state/{{TICKET_KEY}}/investigation.md` (and triage.md if useful).
+- If investigation.md lists **Prior lessons**, treat them as constraints on the approach.
 - If `phases-rules/06-design-solution.md` exists, read it — but **only apply
   the personas listed below** (orchestrator already filtered by complexity).
 - Switch to Plan mode (`SwitchMode` → `plan`) before designing.

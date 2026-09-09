@@ -22,6 +22,12 @@ Persona routing: `clear` → Developer + QE; `complicated`/`complex` → all fiv
 **Artifact paths (mandatory):** Write/read only under
 `.cursor/skills/dev-helper/state/${TICKET_KEY}/` — never repo-root `state/`.
 
+**Context tiers:** Parent recaps from L0 only; Read L2 only at gates
+(reproduce / design review / reevaluate). See `docs/CONTEXT-TIERS.md`.
+
+**Session discipline:** One MTV ticket per parent session. Escalate via Task
+handoff + `resolve-model.sh` — never switch parent model mid-chat.
+
 ---
 
 ## P1: Triage
@@ -41,7 +47,7 @@ Persona routing: `clear` → Developer + QE; `complicated`/`complex` → all fiv
 `[clear: lightweight]` — confirm fix location only, skip blast radius, only check ticket's own `customfield_10875` for backend PRs.
 **Purpose:** Root cause, affected files, backend PRs.
 
-**Agent:** Fetch ticket + comments + attachments. Discover backend PRs: `customfield_10875` → `issuelinks` → `parent` → children JQL → recurse child Epics (max 3 levels). `gh pr diff <PR#> --repo kubev2v/forklift`. Search UI codebase. Blast radius: Architect + `.cursor/rules/frontend/` when personas include Architect. Domain: Forklift Expert when listed. Gaps → `ask-more-info`.
+**Agent:** Fetch ticket + comments + attachments. **Prior lessons:** `scripts/lessons-grep.sh` with 2–4 keywords; note hits under **Prior lessons** in investigation.md (do not dump full lesson files). Discover backend PRs: `customfield_10875` → `issuelinks` → `parent` → children JQL → recurse child Epics (max 3 levels). `gh pr diff <PR#> --repo kubev2v/forklift`. Search UI codebase. Blast radius: Architect + `.cursor/rules/frontend/` when personas include Architect. Domain: Forklift Expert when listed. Gaps → `ask-more-info`.
 
 **State:** `.investigation.findings`, `.rootCause`, `.affectedFiles`, `.backendPRs`, `.completedAt`
 **Write:** `.cursor/skills/dev-helper/state/${TICKET_KEY}/investigation.md`
@@ -183,9 +189,14 @@ Do not burn tokens on automated 3x test retry loops inside one long context.
 
 **Standard (complicated/complex):** Read PR diff, review comments, investigation.md, design.md. Determine if rules need updating.
 
+**Before appending a lesson:** `scripts/lessons-grep.sh` for theme keywords — skip duplicates; surface conflicts to the user. Prefer rule PRs for team-wide truth; keep lesson bullets minimal (see `docs/LESSONS.md`).
+
 **Rule targets:** CRD/resource→`project-context.mdc` · Provider/status→`project-context.mdc`+`forklift-expert.mdc` · Utility/hook→`AGENTS.md` · Convention→`AGENTS.md` · Test/mock→`playwright-testing.mdc` · i18n/PF/component→`.cursor/rules/frontend/*` · Security→`backend/**` or `AGENTS.md`
 
 **Lesson themes:** Architecture→`lessons/architecture.md` · Implementation→`lessons/implementation.md` · UI patterns→`lessons/ui-patterns.md` · Process→`lessons/process.md` · Security→`lessons/security.md` · Communication→`lessons/communication.md`
+
+**Batch catch-up:** For merged PRs across the repo (not just this ticket), use
+`repo-pr-lessons` skill — complements P11b when learn was skipped after manual merge.
 
 **If learnings:** Branch `chore/learn-${TICKET_KEY}` from `upstream/main`, update rules, append lessons, commit `-s`, create PR. `.learn.status = "learned"`.
 **If none:** `.learn.status = "reviewed-skipped"`.

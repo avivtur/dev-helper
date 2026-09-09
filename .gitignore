@@ -5,6 +5,7 @@ summaries/
 lessons/
 phases-rules/
 dev-helper.config.json
+repo-pr-lessons/state.json
 
 # Dashboard build artifacts
 dashboard/node_modules/

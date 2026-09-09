@@ -31,7 +31,7 @@ ln -s "$(pwd)" ~/.cursor/extensions/dev-helper-dashboard
 
 Then in Cursor, say: **"work on MTV-5300"**
 
-**Token cost / team principles:** [docs/TOKEN-OPTIMIZATION.md](docs/TOKEN-OPTIMIZATION.md)
+**Docs:** [TOKEN-OPTIMIZATION.md](docs/TOKEN-OPTIMIZATION.md) · [CONTEXT-TIERS.md](docs/CONTEXT-TIERS.md) · [GOLD-EVAL.md](docs/GOLD-EVAL.md) · [LESSONS.md](docs/LESSONS.md) · [repo-pr-lessons](repo-pr-lessons/SKILL.md)
 
 ## Prerequisites
 

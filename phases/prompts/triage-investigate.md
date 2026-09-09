@@ -36,15 +36,18 @@ for `{{TICKET_KEY}}`. Fresh context only — do not assume prior chat history.
 ## Investigate
 
 1. Fetch ticket + comments + attachments (analyze images/logs/YAML).
-2. Discover backend PRs via Jira hierarchy (customfield_10875, links, parent,
+2. Derive 2–4 keywords from the ticket summary (component, provider, feature).
+   Run `scripts/lessons-grep.sh "<keywords>"`. If hits: note under **Prior lessons**
+   in investigation.md (L1 — do not load full lesson files into chat).
+3. Discover backend PRs via Jira hierarchy (customfield_10875, links, parent,
    children; max 3 levels). Use `gh pr view/diff` on backend repo from config.
-3. Search UI codebase; for non-clear tickets run blast radius (Architect if
+4. Search UI codebase; for non-clear tickets run blast radius (Architect if
    personas include it — see PERSONAS below).
-4. Write `.cursor/skills/dev-helper/state/{{TICKET_KEY}}/investigation.md`.
+5. Write `.cursor/skills/dev-helper/state/{{TICKET_KEY}}/investigation.md`.
    Download attachments to `.cursor/skills/dev-helper/state/{{TICKET_KEY}}/attachments/` if needed.
-5. Set `.investigation.findings`, `.rootCause`, `.affectedFiles`, `.backendPRs`,
+6. Set `.investigation.findings`, `.rootCause`, `.affectedFiles`, `.backendPRs`,
    `.completedAt`.
-6. Advance: Bug → `reproduce`; Story with UI → `reproduce`; else → `jira-track`.
+7. Advance: Bug → `reproduce`; Story with UI → `reproduce`; else → `jira-track`.
 
 ## PERSONAS
 

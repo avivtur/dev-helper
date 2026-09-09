@@ -1,0 +1,6 @@
+{
+  "lastRunAt": null,
+  "lastProcessedMergeAt": null,
+  "lastProcessedPrNumber": null,
+  "_comment": "Copy to state.json on first run, or let the skill create it. Gitignored."
+}

@@ -241,15 +241,39 @@ layer of conventions.
 
 ---
 
+## Context tiers (L0 / L1 / L2)
+
+Parent stays on **L0** (subagent summaries). Subagents use **L1** (`quick-ref`) and
+write **L2** state artifacts. Parent Reads L2 only at gates (reproduce checklist,
+design review, reevaluate). Full table: [CONTEXT-TIERS.md](CONTEXT-TIERS.md).
+
+## Industry patterns we already match
+
+| Pattern | Dev-helper |
+|---------|------------|
+| Cheap-model pipeline | `resolve-model.sh` — Composer → Grok → Opus with approval |
+| Model router (not mid-chat switch) | Model chosen **per Task**; never upgrade parent mid-session |
+| Handoffs vs switches | Task subagents = fresh context + tailored model |
+| Context minimalism | Orchestrator + L0/L1/L2 + one ticket per session |
+| Structured handovers | `state/<TICKET>/*.md` + subagent `summary:` |
+| Avoid unnecessary MCPs | Human reproduce/verify; bash scripts for Jira/gh |
+
+**Do not** change the parent chat’s model mid-session. Escalate via a new Task
+with `resolve-model.sh` output.
+
 ## References in this repo
 
 | Topic | Location |
 |-------|----------|
+| Context tiers | [CONTEXT-TIERS.md](CONTEXT-TIERS.md) |
+| Gold eval | [GOLD-EVAL.md](GOLD-EVAL.md) |
+| Lessons | [LESSONS.md](LESSONS.md) |
 | Orchestrator rules | [phases/orchestrator-brief.md](../phases/orchestrator-brief.md) |
 | Full orchestration loop | [SKILL.md](../SKILL.md) |
 | Phase one-pager | [phases/quick-ref.md](../phases/quick-ref.md) |
 | Subagent prompt templates | [phases/prompts/](../phases/prompts/) |
 | Model resolution | [scripts/resolve-model.sh](../scripts/resolve-model.sh) |
+| Repo PR lessons | [repo-pr-lessons/SKILL.md](../repo-pr-lessons/SKILL.md) |
 | Config example | [examples/config.full.json](../examples/config.full.json) |
 
 ---

@@ -31,9 +31,9 @@ The parent agent **acts as orchestrator only**. This is not optional and not an 
 | verify, e2e-test run | **Human** runs `npm test` / Playwright; parent waits for output |
 | state init, claim, send-pr, monitor scripts | **Subagent or script** — never parent inline |
 
-**Parent MUST NOT:** edit `src/` or tests, run `npm test`, use Playwright MCP, read full `phases/01-*.md` files, skip gates, or `gh pr create` manually.
+**Parent MUST NOT:** edit `src/` or tests, run `npm test`, use Playwright MCP, read full `phases/01-*.md` files, skip gates, `gh pr create` manually, change the parent model mid-session, or run more than one MTV ticket in this session.
 
-**Parent MUST:** call `work-on-ticket` MCP (or follow dashboard prompt), read `orchestratorInstructions`, dispatch Task per phase, apply persona routing, get Opus approval when `needsApproval`.
+**Parent MUST:** call `work-on-ticket` MCP (or follow dashboard prompt), read `orchestratorInstructions`, dispatch Task per phase, apply persona routing, get Opus approval when `needsApproval`, recap from L0 summaries only.
 
 Dashboard and MCP both route here — if you started from the dashboard button, you still follow this table.
 
@@ -42,6 +42,19 @@ Dashboard and MCP both route here — if you started from the dashboard button, 
 - Constants / field IDs: [reference.md](reference.md)
 - Phase details (fallback only): [phases/quick-ref.md](phases/quick-ref.md)
 - Subagent prompt templates: [phases/prompts/](phases/prompts/)
+- Context tiers: [docs/CONTEXT-TIERS.md](docs/CONTEXT-TIERS.md)
+
+---
+
+## Context Tiers (L0 / L1 / L2)
+
+| Tier | Source | Parent use |
+|------|--------|------------|
+| **L0** | Subagent `summary:` | **Default** for every recap |
+| **L1** | `quick-ref.md` phase section | When building a Task prompt |
+| **L2** | `state/<TICKET>/*.md` | **Only** at gates (reproduce, design review, reevaluate) |
+
+Do **not** Read L2 between phases. Escalate hard work via a new Task + `resolve-model.sh` — never switch the parent chat model mid-session. One MTV ticket per parent session.
 
 ---
 
@@ -193,10 +206,12 @@ Do **not** pass parent conversation history. Subagents start fresh.
 ### 8. After subagent returns
 
 1. Re-read state (`state-cli.sh get`).
-2. Present a short recap from the subagent summary.
-3. If current phase is gated → ask A) Approve / B) Revise / C) Reject; wait.
+2. Present a short recap from the subagent **L0** `summary:` — do **not** Read
+   L2 artifacts unless a gate below applies.
+3. If current phase is gated → ask A) Approve / B) Revise / C) Reject; wait
+   (may Read `design.md` for the user’s review).
 4. Else if next phase is human (`reproduce`, or verify/e2e awaiting run) → emit
-   the human checklist and wait.
+   the human checklist and wait (reproduce may Read `investigation.md` once).
 5. Else dispatch the next phase (or stop if waiting / done).
 
 ---
@@ -240,7 +255,8 @@ Return summary must list **exactly** these paths — no additions, no substituti
 
 ### Reproduce (`reproduce`)
 
-1. Read `.cursor/skills/dev-helper/state/${TICKET}/investigation.md` (and triage if useful).
+1. **Once** Read L2 `.cursor/skills/dev-helper/state/${TICKET}/investigation.md`
+   (and `triage.md` only if needed for URLs/steps) — allowed gate for checklist.
 2. Follow [phases/prompts/reproduce.md](phases/prompts/reproduce.md).
 3. Output a numbered checklist (URLs, clicks, expected vs actual, screenshot
    paths under `~/Downloads/${TICKET}/repro-*.png`).

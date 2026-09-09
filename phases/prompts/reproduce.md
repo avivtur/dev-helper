@@ -2,7 +2,9 @@
 
 **No subagent.** Orchestrator emits this checklist for the user.
 
-Fill from `.cursor/skills/dev-helper/state/{{TICKET_KEY}}/investigation.md` and triage.
+**L2 gate:** Read `.cursor/skills/dev-helper/state/{{TICKET_KEY}}/investigation.md`
+**once** (and `triage.md` only if needed for URLs/steps) to fill the template.
+Do not re-read L2 after the user replies except to write `reproduction.md`.
 
 ---
 

@@ -28,18 +28,24 @@ You are a **dev-helper phase worker** for `{{TICKET_KEY}}` (mode: `{{MODE}}`).
 ## Mode: `learn` (full — complicated/complex)
 
 1. Read `phases/quick-ref.md` P11b.
-2. Review PR diff, review comments, investigation.md, design.md as needed.
-3. Update rules/lessons if warranted; else `.learn.status = reviewed-skipped`.
-4. Advance to `track-jira-merged`.
+2. Before adding a lesson: run `scripts/lessons-grep.sh` for the theme keywords;
+   skip duplicates; if a conflicting bullet exists, stop and ask the user.
+3. Review PR diff, review comments, investigation.md, design.md as needed.
+4. Prefer **minimal** lesson bullets (entry format in `docs/LESSONS.md`). Prefer
+   a **rule PR** for team-wide truth; use `lessons/` for narrative context.
+   Avoid bloated test/doc dumps in learn PRs.
+5. Update rules/lessons if warranted; else `.learn.status = reviewed-skipped`.
+6. Advance to `track-jira-merged`.
 
 ## Mode: `learn-comments-only` (clear tickets with comments)
 
 1. Review **only** the provided `{{COMMENTS_JSON}}` (and minimal file paths
    mentioned in comments). Do NOT fetch full PR diff unless a comment requires
    reading a specific file.
-2. If a rule/lesson update is warranted, make it; else
+2. Grep existing lessons before appending; skip duplicates.
+3. If a rule/lesson update is warranted, make it; else
    `.learn.status = reviewed-skipped`.
-3. Advance to `track-jira-merged`.
+4. Advance to `track-jira-merged`.
 
 ## Return
 
