@@ -3,7 +3,7 @@ state/
 audit/
 summaries/
 lessons/
-phases-rules/
+# Forklift phase rules are committed under phases-rules/ (not copied from examples)
 dev-helper.config.json
 repo-pr-lessons/state.json
 

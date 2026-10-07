@@ -16,9 +16,7 @@ cp .cursor/skills/dev-helper/examples/config.minimal.json \
    .cursor/skills/dev-helper/dev-helper.config.json
 # Edit dev-helper.config.json with your project's Jira + GitHub values
 
-# (Optional) Copy project-specific phase rules
-cp -r .cursor/skills/dev-helper/examples/phases-rules.example/ \
-      .cursor/skills/dev-helper/phases-rules/
+# Forklift: phase rules ship in phases-rules/ (no copy step)
 
 # (Optional) Copy lesson templates
 cp -r .cursor/skills/dev-helper/examples/lessons.example/ \
@@ -65,15 +63,10 @@ Prompt templates: [`phases/prompts/`](phases/prompts/).
 
 ## Project-Specific Rules
 
-Each project can inject its own context per phase via `phases-rules/`:
+Forklift Console Plugin rules live in **`phases-rules/`** (committed in this
+repo). Paths reference `.cursor/rules/agents/*.mdc` in the console plugin.
 
-```
-phases-rules/
-  06-design-solution.md  # "Use these agent personas..."
-  07-implement.md        # "Load these coding standards..."
-```
-
-See `examples/phases-rules.example/` for a reference (Forklift Console Plugin).
+For other projects, fork from `examples/phases-rules.example/`.
 
 ## Config
 
