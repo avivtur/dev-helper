@@ -198,37 +198,39 @@ If the Google Doc is inaccessible, ask the user for the content.
 
 ## PR Title Format
 
-All PRs must use this title format:
+Embedded in `phases/prompts/send-pr.md` and `phases/quick-ref.md` P10. Enforced by
+`send-pr.sh` (title must start with `Resolves: MTV-`):
 
 ```text
-Resolves: MTV-XXXX | Short description
+Resolves: MTV-XXXX | short description
 ```
-
-The `send-pr.sh` script enforces this format.
 
 ## PR Template
 
-From `.github/pull_request_template.md`:
+Embedded in `phases/prompts/send-pr.md`, `phases/quick-ref.md` P10, and
+`.cursor/rules/workflows/pr-preparation.mdc`. Aligns with
+`.github/pull_request_template.md` (Links, Description, Demo) plus Test plan.
 
 ```markdown
-## Links
+## 📝 Links
 
 - [MTV-XXXX]($JIRA_BASE_URL/browse/MTV-XXXX)
 
-## Description
+## 📝 Description
 
-[One-sentence summary.]
+[One-sentence summary of the change.]
 
-- [Change 1]
-- [Change 2]
+- [Key change 1]
+- [Key change 2]
 
-## Demo
+## 🎥 Demo
 
-<!-- Screenshots uploaded as release assets by send-pr.sh -->
+<!-- Screenshot or video of the fix -->
 
-## CC://
+## Test plan
 
-[Tag reviewers if needed]
+- [ ] [Test step 1]
+- [ ] [Test step 2]
 ```
 
 ---

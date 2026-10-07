@@ -18,7 +18,9 @@ You are a **dev-helper phase worker** for `{{TICKET_KEY}}` (mode: `{{MODE}}`).
 ## Rules
 
 - Read `phases/quick-ref.md` P7 / P8 / P9 as needed for this mode.
-- Read design.md if present, else investigation.md.
+- Read `design.md` if present, else `investigation.md`.
+- Follow **## Structural layout** in `design.md` when present.
+- If state `.design.layoutPlanFile` is set, read that file for expanded layout.
 - If investigation.md lists **Prior lessons**, treat them as constraints.
 - Prefer **minimal** unit tests that cover the bug/behavior — avoid bloated
   fixtures (e.g. 300 LOC when 50 suffice); oversized tests inflate future PR

@@ -121,30 +121,38 @@ EOF
 
 Note the `-s` flag for DCO sign-off (required by CI).
 
-### 10.3 Write PR body to a temp file
+### 10.3 PR title and body
 
-Create a temporary markdown file with the PR description:
+**Title format (required):**
+
+```text
+Resolves: ${TICKET_KEY} | short description
+```
+
+Write the PR description to a temp file:
 
 ```bash
-cat > /tmp/pr-body-${TICKET_KEY}.md <<'EOF'
-## Links
+JIRA_BASE_URL=$(jq -r '.jira.baseUrl' .cursor/skills/dev-helper/dev-helper.config.json)
+cat > /tmp/pr-body-${TICKET_KEY}.md <<EOF
+## 📝 Links
 
 - [${TICKET_KEY}](${JIRA_BASE_URL}/browse/${TICKET_KEY})
 
-## Description
+## 📝 Description
 
-[Summary of what was changed and why.]
+[One-sentence summary of the change.]
 
-- [Change 1]
-- [Change 2]
+- [Key change 1]
+- [Key change 2]
 
-## Demo
+## 🎥 Demo
 
-<!-- Add screenshot or video -->
+<!-- Screenshot or video of the fix -->
 
-## CC://
+## Test plan
 
-Made with Cursor
+- [ ] [Test step 1]
+- [ ] [Test step 2]
 EOF
 ```
 
@@ -164,7 +172,7 @@ EOF
 
 ```bash
 .cursor/skills/dev-helper/scripts/send-pr.sh ${TICKET_KEY} \
-  --title "Resolves: ${TICKET_KEY} | Brief description" \
+  --title "Resolves: ${TICKET_KEY} | short description" \
   --body-file /tmp/pr-body-${TICKET_KEY}.md
 ```
 

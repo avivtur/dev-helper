@@ -249,6 +249,10 @@ must not substitute other agent files (e.g. Security Reviewer ≠ Architect).
 
 Return summary must list **exactly** these paths — no additions, no substitutions.
 
+**Design phase (UI impact):** Subagent must still read `ux-reviewer.mdc` and
+`forklift-ux-patterns.mdc` for the **Structural layout** section when
+`phases-rules/06-design-solution.md` applies — even on `clear` tickets.
+
 ---
 
 ## Human Phases (orchestrator-owned)
