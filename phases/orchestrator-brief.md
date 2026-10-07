@@ -47,7 +47,7 @@ See also: [docs/CONTEXT-TIERS.md](../docs/CONTEXT-TIERS.md).
 | triage / investigate | Task → `phases/prompts/triage-investigate.md` |
 | reproduce | Read L2 **once** for checklist; print from `phases/prompts/reproduce.md`; wait for user |
 | jira-track | Task → `phases/prompts/jira-track.md` |
-| design | Task → `phases/prompts/design.md`; gate for approval (may Read `design.md`) |
+| design | Task → `phases/prompts/design.md`; gate for approval (may Read `design.md` — include **Structural layout**; optional `layout-plan.md`) |
 | implement | Task → `phases/prompts/implement-verify.md` mode=implement |
 | verify | Ask user to run `npm test`; paste failures → Task fix-tests |
 | e2e-test | Task write-e2e; user runs Playwright |

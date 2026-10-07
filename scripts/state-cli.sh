@@ -150,7 +150,7 @@ cmd_watch() {
       prNumber: $prNum,
       startedAt: $now,
       investigation: { completedAt: null, findings: null, rootCause: null, affectedFiles: [] },
-      design: { planFile: null, approvedAt: null },
+      design: { approvedAt: null, layoutPlanFile: null, planFile: null },
       pr: { createdAt: $now, mergedAt: null, ciStatus: null, lastChecked: null },
       history: []
     }')
@@ -219,7 +219,7 @@ cmd_init() {
       prNumber: null,
       startedAt: $now,
       investigation: { completedAt: null, findings: null, rootCause: null, affectedFiles: [] },
-      design: { planFile: null, approvedAt: null },
+      design: { approvedAt: null, layoutPlanFile: null, planFile: null },
       pr: { createdAt: null, mergedAt: null, ciStatus: null, lastChecked: null },
       learn: { status: "none", committedAt: null },
       complexity: null,

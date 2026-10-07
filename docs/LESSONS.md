@@ -52,7 +52,8 @@ Optional tag for search (sparingly):
 .cursor/skills/dev-helper/scripts/lessons-grep.sh "OVA" "casing"
 ```
 
-Skips `## Superseded` sections. Max 20 hits. Used by investigate (P2) and
+Skips `## Superseded` sections. Max 20 hits. Used by investigate (P2),
+**personal-reviewer** (Prior lessons in `gather-context.sh`), and
 `repo-pr-lessons` dedupe.
 
 ## Who writes lessons
@@ -61,16 +62,19 @@ Skips `## Superseded` sections. Max 20 hits. Used by investigate (P2) and
 |--------|------|
 | **dev-helper P11b learn** | After your ticket/PR (often skipped if you merge manually) |
 | **repo-pr-lessons** | On-demand batch from **all** merged repo PRs since checkpoint |
+| **personal-reviewer** | **Read:** every review (`lessons-grep` via `gather-context.sh`). **Write:** after user corrects the proposed review before post, after self-review code fixes, or from external PR comments on post (see personal-reviewer SKILL § Learn from review) |
 
 ## Approve pending batch (repo-pr-lessons)
 
-1. Review `lessons/pending/YYYY-MM-DD-batch.md`
+1. Review `lessons/pending/YYYY-MM-DD-batch.md` or `lessons/pending/review-<PR>-<date>.md`
+   (personal-reviewer conflict queue)
 2. Say `approve lessons batch` (or reject / revise)
 3. Agent appends approved bullets to theme files and updates
    `repo-pr-lessons/state.json`
 
 ## Related
 
+- [personal-reviewer/SKILL.md](../../personal-reviewer/SKILL.md) (read/write during PR review)
 - [repo-pr-lessons/SKILL.md](../repo-pr-lessons/SKILL.md)
 - [GOLD-EVAL.md](GOLD-EVAL.md)
 - Phase P11b in [phases/quick-ref.md](../phases/quick-ref.md)

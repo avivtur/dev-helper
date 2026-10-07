@@ -71,7 +71,7 @@ fi
 if [[ -z "$current_sprint" ]]; then
   if [[ "$OVERRIDE_SPRINT" == "auto" || -z "$OVERRIDE_SPRINT" ]]; then
     sprint_info=$("$SPRINT_LOOKUP" 2>/dev/null || echo "")
-    sprint_id=$(echo "$sprint_info" | grep "^SPRINT_ID:" | awk '{print $2}')
+    sprint_id=$(echo "$sprint_info" | grep "^SPRINT_ID:" | awk '{print $2}' || true)
     if [[ -n "$sprint_id" ]]; then
       "$JIRA_TRACK" set-sprint "$KEY" "$sprint_id"
       report+="SET sprint: ${sprint_id}\n"

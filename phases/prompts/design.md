@@ -20,7 +20,12 @@ You are a **dev-helper phase worker**. Complete **design** for `{{TICKET_KEY}}`
 - If `phases-rules/06-design-solution.md` exists, read it — but **only apply
   the personas listed below** (orchestrator already filtered by complexity).
 - Switch to Plan mode (`SwitchMode` → `plan`) before designing.
-- Use CreatePlan: Problem, Approach, Alternatives, Scope, Test Plan, Risks.
+- Use CreatePlan: Problem, Approach, **Structural layout** (when UI impact — see
+  `phases-rules/06-design-solution.md`), Alternatives, Scope, Test Plan, Risks.
+- When UI impact is true, read `.cursor/rules/agents/ux-reviewer.mdc` and
+  `.cursor/rules/agents/forklift-ux-patterns.mdc` even if UX is not in PERSONAS.
+- For complicated/complex + new/changed navigation surface, also write
+  `layout-plan.md` under the ticket state dir after approval.
 - If alternatives unresolved → STOP and ask orchestrator/user.
 - Write `.cursor/skills/dev-helper/state/{{TICKET_KEY}}/design.md` **only after** approval signal in your
   prompt, OR produce the plan and return `awaiting-approval` without advancing.

@@ -14,7 +14,7 @@ Default persona paths (project may override via phases-rules):
 - Developer: `.cursor/rules/agents/developer.mdc`
 - QE: `.cursor/rules/agents/qe-agent.mdc`
 - Architect: `.cursor/rules/agents/architect.mdc`
-- UX: `.cursor/rules/agents/ux-reviewer.mdc`
+- UX: `.cursor/rules/agents/ux-reviewer.mdc` (+ `forklift-ux-patterns.mdc` for layout)
 - Forklift Expert: `.cursor/rules/agents/forklift-expert.mdc`
 
 Persona routing: `clear` → Developer + QE; `complicated`/`complex` → all five.
@@ -101,7 +101,9 @@ exceptional override, not the default path.
 
 **Agent:** Switch to **Plan mode**. Apply only injected personas. Architect blast
 radius for new entity/provider (when Architect listed). Check `@forklift-ui/types`
-gaps. `CreatePlan` template: Problem, Approach, Alternatives, Scope, Test Plan, Risks.
+gaps. `CreatePlan` template: Problem, Approach, **Structural layout** (UI
+impact — `phases-rules/06-design-solution.md`), Alternatives, Scope, Test Plan,
+Risks. Optional `layout-plan.md` for complicated/complex UI surfaces.
 **HARD CONSTRAINT:** If alternatives unresolved → STOP, ask user.
 If gated: A) Approve / B) Revise / C) Reject — wait for explicit choice.
 **Write:** `.cursor/skills/dev-helper/state/${TICKET_KEY}/design.md` (only after approval)
@@ -151,8 +153,34 @@ Do not burn tokens on automated 3x test retry loops inside one long context.
 
 ## P10: Send PR
 **Purpose:** Stage, commit, create PR, update Jira — atomically via script.
-**Agent:** Pre-check: ONLY `npm run validate-commits` (lint/build/i18n done in P7). Rebase: `git fetch upstream main && git rebase upstream/main`. Stage ONLY fix files (not state/rule files), commit with `-s` (DCO). Write PR body to `/tmp/pr-body-${TICKET_KEY}.md`.
-**Run:** `scripts/send-pr.sh ${TICKET_KEY} --title "..." --body-file /tmp/pr-body-${TICKET_KEY}.md`
+**Agent:** Pre-check: ONLY `npm run validate-commits` (lint/build/i18n done in P7). Rebase: `git fetch upstream main && git rebase upstream/main`. Stage ONLY fix files (not state/rule files), commit with `-s` (DCO). Write PR body to `/tmp/pr-body-${TICKET_KEY}.md` using:
+
+```markdown
+## 📝 Links
+
+- [${TICKET_KEY}](${JIRA_BASE_URL}/browse/${TICKET_KEY})
+
+## 📝 Description
+
+[One-sentence summary of the change.]
+
+- [Key change 1]
+- [Key change 2]
+
+## 🎥 Demo
+
+<!-- Screenshot or video of the fix -->
+
+## Test plan
+
+- [ ] [Test step 1]
+- [ ] [Test step 2]
+```
+
+(`JIRA_BASE_URL` from `dev-helper.config.json` → `.jira.baseUrl`)
+
+**Title:** `Resolves: ${TICKET_KEY} | short description`
+**Run:** `scripts/send-pr.sh ${TICKET_KEY} --title "Resolves: ${TICKET_KEY} | short description" --body-file /tmp/pr-body-${TICKET_KEY}.md`
 → push, PR create, state, Jira (Bug→POST, Story→In Progress + parent Epic), PR link, Ready flag, phase→monitor-pr, wait.
 **HARD CONSTRAINT:** Do NOT run sub-steps manually. Re-run script on failure.
 **Advance:** handled by script → `phase monitor-pr`

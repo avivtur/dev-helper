@@ -49,7 +49,9 @@ Config via parent `dev-helper.config.json` (`github.repo`). Scripts source
    bullets using [docs/LESSONS.md](../docs/LESSONS.md) schema.
 5. For each candidate: `scripts/lessons-dedupe.sh` → `duplicate` (drop),
    `conflict` (include both sides for user), or `none` (include).
-6. Write `lessons/pending/YYYY-MM-DD-batch.md`. **STOP for review.**
+6. Write `lessons/pending/YYYY-MM-DD-batch.md`. **STOP for review.** The same
+   `lessons/pending/` queue may also receive `review-<PR>-<date>.md` files from
+   **personal-reviewer** when dedupe reports `conflict`.
 7. On `approve lessons batch`: append approved bullets to theme files; move
    conflicts per user decision; update `state.json` checkpoint; suggest analyzers.
 8. On reject: update checkpoint anyway if user says skip window; do not append.

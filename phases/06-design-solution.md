@@ -56,11 +56,12 @@ Use `SemanticSearch` and `Grep` to find relevant code.
 
 ### 6.2 Consider UX implications
 
-From the UX perspective:
+From the UX perspective (see `ux-reviewer.mdc` and `forklift-ux-patterns.mdc`):
 - What would be the most intuitive behavior for the user?
 - Are there loading/error/empty states to handle?
 - Does the change affect keyboard navigation or accessibility?
 - Are there PatternFly components that fit this use case?
+- Draft the **Structural layout** section (and `layout-plan.md` when required).
 
 **Feature completeness check** (for features that add a new entity or provider):
 Apply the **Architect** persona (`.cursor/rules/agents/architect.mdc`) to run a
@@ -98,6 +99,34 @@ Call Cursor's `CreatePlan` tool with the design content. The `plan` parameter
  Reference specific file paths and code snippets.
  Include a mermaid diagram if the change involves new data flows,
  component hierarchies, or multi-step processes.]
+
+## Structural layout
+
+Required when the ticket has **UI impact** (see `phases-rules/06-design-solution.md`).
+Omit only for backend-only or non-UI changes.
+
+**Screen type:** list | details | wizard | modal | inline panel | other
+
+**Reference screens in plugin:** (paths to closest existing MTV pages)
+
+**Component tree:** (indented markdown or mermaid — PatternFly components by name)
+
+**Regions:** (title, alerts, toolbar, main, side panel, footer actions)
+
+**Primary action / secondary actions:**
+
+**Navigation & wayfinding:** (tabs, breadcrumbs, links, empty paths)
+
+**States by region:** loading | empty | error | success | partial data
+
+**Content notes:** (labels, helper text, error copy — English keys for i18n)
+
+**A11y notes:** (focus order, modal focus trap, live regions, keyboard path)
+
+For **complicated** or **complex** tickets with UI impact that add a new surface
+or change navigation, also write an expanded
+`.cursor/skills/dev-helper/state/${TICKET_KEY}/layout-plan.md` (same headings;
+optional ASCII wireframe) and reference it from this section.
 
 ## Alternatives Considered
 [Options considered. For each: what it is, pros, cons, chosen/rejected.
@@ -171,10 +200,18 @@ After the plan is approved, persist the design and advance:
 
 3. **Update state and advance:**
 
+   If `layout-plan.md` was written, persist its path; otherwise leave
+   `.design.layoutPlanFile` null (structural layout section-only is valid).
+
    ```bash
    .cursor/skills/dev-helper/scripts/state-cli.sh set ${TICKET_KEY} \
      --arg planFile ".cursor/skills/dev-helper/state/${TICKET_KEY}/design.md" \
      '.design.planFile = $planFile | .design.approvedAt = (now | todate)'
+
+   # When layout-plan.md exists:
+   .cursor/skills/dev-helper/scripts/state-cli.sh set ${TICKET_KEY} \
+     --arg layoutPlanFile ".cursor/skills/dev-helper/state/${TICKET_KEY}/layout-plan.md" \
+     '.design.layoutPlanFile = $layoutPlanFile'
 
    .cursor/skills/dev-helper/scripts/state-cli.sh phase ${TICKET_KEY} implement
    ```

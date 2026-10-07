@@ -81,7 +81,7 @@ fi
 
 pr_url=$(gh pr create \
   --repo "$GH_REPO" \
-  --head "$current_branch" \
+  --head "$GH_USER:$current_branch" \
   --title "$TITLE" \
   --body-file "$BODY_FILE" \
   $DRAFT_FLAG $LABEL_FLAGS < /dev/null 2>&1)
