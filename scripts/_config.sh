@@ -43,6 +43,7 @@ GH_UPSTREAM=$(config_get '.github.upstreamRemote // "upstream"')
 GH_FORK=$(config_get '.github.forkRemote // "origin"')
 GH_BASE_BRANCH=$(config_get '.github.baseBranch // "main"')
 STALE_THRESHOLD_DAYS=$(config_get '.workflow.staleWaitingDays // 7')
+SONAR_PROJECT_KEY_CONFIG=$(config_get '.sonar.projectKey // empty')
 
 # Personal secrets (not in config -- per-developer)
 # Parsed as key-value text instead of sourced as bash to prevent command injection.

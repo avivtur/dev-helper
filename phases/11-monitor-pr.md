@@ -21,7 +21,8 @@ waiting. Includes a Learn sub-step on approval.
 ## Standalone Mode
 
 This phase can be invoked standalone (outside the dev-helper lifecycle) via
-the `personal-pr-monitor` skill. In standalone mode:
+the **pr-monitor** skill (`skills/pr-monitor/SKILL.md` under this skill directory).
+In standalone mode:
 
 - **Skip** all `state-cli.sh phase` and `state-cli.sh wait` commands
 - **Skip** the Learn sub-step (Priority 5) and Learn gate in merge criteria
@@ -81,6 +82,7 @@ whatever requires external action (reviewer, CI).
 
 The script outputs:
 - CI check status (passing/failing/pending)
+- SonarCloud open issues when the SonarCloud check is failing (`FLAG: SONAR_ISSUES`)
 - Review decisions (approved, changes requested)
 - Unresolved review threads and comments
 - Merge conflicts and behind-main count
@@ -174,6 +176,25 @@ If CI checks are failing (after rebase, if one was needed):
 2. **If our code caused it**: Investigate the failure, propose a fix, implement
    it, commit (`-s`) and push to the PR branch
 3. **If it's a flaky test (Konflux)**: Post `/retest` comment to re-trigger
+
+#### SonarCloud Code Analysis
+
+When `pr-monitor.sh` lists **SonarCloud** among failing checks, it also prints
+the SonarCloud issues block (and `FLAG: SONAR_ISSUES`) by calling:
+
+```bash
+.cursor/skills/dev-helper/scripts/sonar-pr-issues.sh ${PR_NUMBER}
+```
+
+Re-run manually after pushing fixes. Set `sonar.projectKey` in
+`dev-helper.config.json` or export `SONAR_PROJECT_KEY`. Optional:
+`SONAR_ISSUES_PAGE_SIZE` (default `50`).
+
+Dashboard:
+`https://sonarcloud.io/project/issues?pullRequest=${PR_NUMBER}&resolved=false&id=<projectKey>`
+
+**Agent workflow:** fix each listed file/line/rule, commit (`-s`), push, then wait
+for SonarCloud to re-analyze before treating CI as fixed.
 
 ```bash
 gh pr comment ${PR_NUMBER} --repo $GH_REPO --body "/retest"

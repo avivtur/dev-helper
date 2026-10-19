@@ -38,6 +38,7 @@ The parent agent **acts as orchestrator only**. This is not optional and not an 
 Dashboard and MCP both route here — if you started from the dashboard button, you still follow this table.
 
 - Setup / config / state CLI: [SETUP.md](SETUP.md)
+- **PR monitor only (no ticket lifecycle):** [skills/pr-monitor/SKILL.md](skills/pr-monitor/SKILL.md) → phase [11-monitor-pr.md](phases/11-monitor-pr.md)
 - First-time install: [SETUP.md](SETUP.md)
 - Constants / field IDs: [reference.md](reference.md)
 - Phase details (fallback only): [phases/quick-ref.md](phases/quick-ref.md)
