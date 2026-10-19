@@ -123,6 +123,18 @@ if [[ "$ci_state" != "SUCCESS" ]]; then
   echo "$pr" | jq -r '.commits.nodes[0].commit.statusCheckRollup.contexts.nodes[] |
     select(.conclusion != "SUCCESS" and .conclusion != "NEUTRAL" and .state != "SUCCESS") |
     "  - \(.name // .context): \(.conclusion // .state // "PENDING")"' 2>/dev/null || echo "  (none parseable)"
+
+  sonar_failed=$(echo "$pr" | jq -r '[.commits.nodes[0].commit.statusCheckRollup.contexts.nodes[] |
+    select(.conclusion != "SUCCESS" and .conclusion != "NEUTRAL" and .state != "SUCCESS") |
+    .name // .context] | map(select(test("SonarCloud"; "i"))) | length')
+  if [[ "${sonar_failed:-0}" -gt 0 ]]; then
+    sonar_script="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/sonar-pr-issues.sh"
+    if [[ -x "$sonar_script" ]]; then
+      echo ""
+      "$sonar_script" "$PR" || echo "  (SonarCloud API fetch failed)" >&2
+      echo "FLAG: SONAR_ISSUES"
+    fi
+  fi
 fi
 echo ""
 

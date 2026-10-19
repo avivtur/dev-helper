@@ -27,7 +27,8 @@ cd .cursor/skills/dev-helper/dashboard && npm install && npm run build
 ln -s "$(pwd)" ~/.cursor/extensions/dev-helper-dashboard
 ```
 
-Then in Cursor, say: **"work on MTV-5300"**
+Then in Cursor, say: **"work on MTV-5300"**, or for PR-only monitoring:
+**"monitor PR #1234"** (uses [skills/pr-monitor/SKILL.md](skills/pr-monitor/SKILL.md) → phase 11).
 
 **Docs:** [TOKEN-OPTIMIZATION.md](docs/TOKEN-OPTIMIZATION.md) · [CONTEXT-TIERS.md](docs/CONTEXT-TIERS.md) · [GOLD-EVAL.md](docs/GOLD-EVAL.md) · [LESSONS.md](docs/LESSONS.md) · [repo-pr-lessons](repo-pr-lessons/SKILL.md)
 

@@ -192,7 +192,7 @@ Do not burn tokens on automated 3x test retry loops inside one long context.
 **Run:** `scripts/pr-monitor.sh ${PR_NUMBER} ${TICKET_KEY}` → read ACTION line and execute:
 
 - `rebase` → `git rebase upstream/main`, force-push, wait for CI. **NEVER auto-resolve conflicts** — abort + alert user.
-- `fix-ci` → If our code: fix, commit `-s`, push. If flaky: `/retest` (max 3). Wait for CI.
+- `fix-ci` → If our code: fix, commit `-s`, push. If flaky: `/retest` (max 3). If SonarCloud (`FLAG: SONAR_ISSUES`): run `scripts/sonar-pr-issues.sh ${PR_NUMBER}`, fix issues, push, wait. See `11-monitor-pr.md` §11.4 SonarCloud.
 - `reply-to-comments` → Reply to EVERY comment individually: `gh api repos/${GH_REPO}/pulls/${PR_NUMBER}/comments -X POST -f body="..." -F in_reply_to=<ID>`. Fix, push, wait.
 - `learn` → Review PR diff + reviewer comments, propose rule updates.
 - `merge` → Verify ALL 6 criteria (CI passing, approved, no conflicts, up to date, no unresolved threads, learn done) → `gh pr merge --squash --delete-branch`
